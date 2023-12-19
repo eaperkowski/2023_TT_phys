@@ -2300,10 +2300,7 @@ post.canopy.merged <- snapshot.post %>%
   full_join(gm.density.quad, by = c("plot", "subplot", "quad")) %>%
   mutate(rosette_subplot = ifelse(is.na(rosette_subplot), 0, rosette_subplot),
          adult_subplot = ifelse(is.na(adult_subplot), 0, adult_subplot),
-         total_subplot = ifelse(is.na(total_subplot), 0, total_subplot),
-         rosette_quad = ifelse(is.na(rosette_quad), 0, rosette_quad),
-         adult_quad = ifelse(is.na(adult_quad), 0, rosette_quad),
-         total_quad = ifelse(is.na(total_quad), 0, rosette_quad)) %>%
+         total_subplot = ifelse(is.na(total_subplot), 0, total_subplot)) %>%
   dplyr::select(id, spp, plot, subplot, quad, rosette_subplot:total_quad,
                 gm.trt, canopy = timepoint,
                 anet, gsw, ci.ca, iwue, stom.lim = l, vcmax25 = Vcmax, 

@@ -5,40 +5,46 @@
 library(dplyr)
 library(tidyverse)
 
-# Data files
-phys <- read.csv("../data/TT23_phys_data_long.csv")
-multispeq <- read.csv("../data/TT23_multispeq_data.csv") %>%
-  dplyr::select(id:canopy, FmPrime:FvP_over_FmP, NPQt, 
-                Phi2:PhiNPQ, SPAD, -quad)
-nutrients <- read.csv("../data/raw_data/TT23_resin_strip_data.csv")
+# Read data files for gas exchange
+phys <- read.csv("../data/raw_data/TT23_gasExchange.csv")
+multispeq <- read.csv("../data/raw_data/TT23_multispeq_data.csv")
+
+# Read resin strip data file, then subset by composite and standardize
+# values by number of days deployed. Also calculate plant-available N
+# concentration as sum of nitrate and ammonium concentration
+nutrients <- read.csv("../data/raw_data/TT23_resin_strip_data.csv") %>%
+  group_by(round, plot, composite, days_deployed) %>%
+  summarize(phosphate_ppm = mean(phosphate_ppm, na.rm = TRUE),
+            nitrate_ppm = mean(nitrate_ppm, na.rm = TRUE),
+            ammonium_ppm = mean(ammonium_ppm, na.rm = TRUE)) %>%
+  mutate(n_plantAvail = nitrate_ppm + ammonium_ppm,
+         phosphate_ppm_day = phosphate_ppm / days_deployed,
+         nitrate_ppm_day = nitrate_ppm / days_deployed,
+         ammonium_ppm_day = ammonium_ppm / days_deployed,
+         n_plantAvail_day = n_plantAvail / days_deployed,
+         canopy = ifelse(round == 1, 
+                         "pre_closure",
+                         ifelse(round == 2,
+                                "post_closure",
+                                NA))) %>%
+  ungroup(round) %>%
+  dplyr::select(plot, composite, canopy, 
+                days_deployed:n_plantAvail_day) %>%
+  filter(plot == 3 | plot == 5 | plot == 7)
 
 #####################################################################
 # Join multispeq and physiology data set
 #####################################################################
 phys.total <- phys %>%
   full_join(multispeq) %>%
-  mutate(composite = 
-           ifelse(subplot == 1 | subplot == 2 | subplot == 7 | subplot == 8,
-                  "C1",
-                  ifelse(subplot == 3 | subplot == 9,
-                         "C2",
-                         ifelse(subplot == 4 | subplot == 10, 
-                                "C3", 
-                                ifelse(subplot == 5 | subplot == 6 | subplot == 11 | subplot == 12,
-                                       "C4",
-                                       ifelse(subplot == 13 | subplot == 14 | subplot == 19 | subplot == 20,
-                                              "C5", 
-                                              ifelse(subplot == 15 | subplot == 21,
-                                                     "C6", 
-                                                     ifelse(subplot == 16 | subplot == 22,
-                                                            "C7",
-                                                            ifelse(subplot == 17 | subplot == 18 | subplot == 23 | subplot == 24,
-                                                                   "C8",
-                                                                   ifelse(subplot == 25 | subplot == 26 | subplot == 31 | subplot == 32,
-                                                                          "C9", 
-                                                                          ifelse(subplot == 27 | subplot == 33,
-                                                                                 "C10",
-                                                                                 ifelse(subplot == 28 | subplot == 34,
-                                                                                        "C11",
-                                                                                        ifelse(subplot == 29 | subplot == 30 | subplot == 35 | subplot == 36,
-                                                                                               "C12", NA)))))))))))))
+  full_join(nutrients, by = c("plot", "composite", "canopy")) %>%
+  filter(!is.na(id))
+
+
+#####################################################################
+# Write compiled data file
+#####################################################################
+write.csv(phys.total, "../data/TT23_compiled_datasheet.csv", row.names = FALSE)
+
+
+
