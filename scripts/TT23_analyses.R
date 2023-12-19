@@ -158,7 +158,7 @@ phosphate_plot <- ggplot() +
   labs(x = "Canopy status", 
        y = expression(bold("Phosphate concentration (ppm day"^"-1"*")")),
        fill = "Garlic mustard\n treatment") +
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 16) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"))
 
@@ -208,7 +208,7 @@ n_plantavailable_plot <- ggplot() +
   labs(x = "Canopy status", 
        y = expression(bold("Plant-available N (ppm day"^"-1"*")")),
        fill = "Garlic mustard\n treatment") +
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 16) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"))
 
@@ -218,7 +218,7 @@ png("../figs/TT23_soil_nutrients.png", width = 12, height = 4.5,
     units = "in", res = 600)
 ggarrange(n_plantavailable_plot, phosphate_plot, common.legend = TRUE,
           legend = "right", ncol = 2)
-
+dev.off()
 
 
 ##############################################################################
