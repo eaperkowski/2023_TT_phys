@@ -22,7 +22,6 @@ df.soil <- df %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
 
-
 ##############################################################################
 ## Nitrate
 ##############################################################################
@@ -88,37 +87,6 @@ r.squaredGLMM(phosphate)
 # Pairwise comparisons
 emmeans(phosphate, pairwise~gm.trt)
 
-# Prep file for figure
-phosphate_results <- cld(emmeans(phosphate, pairwise~canopy*gm.trt), Letters = LETTERS) %>%
-  mutate(.group = trimws(.group, which = "both"))
-
-phosphate_plot <- ggplot() +
-  geom_point(data = df.soil, 
-             aes(x = gm.trt, y = phosphate_ppm_day, fill = canopy),
-             position = position_jitterdodge(dodge.width = 0.75, 
-                                             jitter.width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
-  geom_errorbar(data = phosphate_results, aes(x = gm.trt, y = emmean,
-                                             ymin = lower.CL, ymax = upper.CL,
-                                             group = canopy),
-                linewidth = 1, position = position_dodge(width = 0.75), width = 0.25) +
-  geom_point(data = phosphate_results, aes(x = gm.trt, y = emmean, fill = canopy),
-             size = 5, position = position_dodge(width = 0.75), shape = 21) +
-  geom_text(data = phosphate_results, aes(x = gm.trt, y = 0.06, group = canopy,
-                                         label = .group),
-            position = position_dodge(width = 0.75), fontface = "bold", size = 6) +
-  scale_fill_discrete(labels = c("Open", "Closed")) +
-  scale_x_discrete(labels = c("Ambient", "Weeded")) +
-  scale_y_continuous(limits = c(0, 0.06), breaks = seq(0, 0.06, 0.02)) +
-  labs(x = expression(paste(bolditalic("Alliaria"), bold(" treatment"))),
-       y = expression(bold("Soil P availability (ppm day"^"-1"*")")),
-       fill = "Canopy") +
-  theme_bw(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),
-        legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25))
-phosphate_plot
-
 ##############################################################################
 ## N availability (nitrate + ammonium)
 ##############################################################################
@@ -141,54 +109,14 @@ r.squaredGLMM(plant_availableN)
 # Pairwise comparisons
 cld(emmeans(plant_availableN, pairwise~gm.trt*canopy))
 
-# Prep file for figure
-n_results <- cld(emmeans(plant_availableN, ~canopy*gm.trt), Letters = LETTERS) %>%
-  mutate(.group = c("B", "B", "A", "A"))
-
-n_plantavailable_plot <- ggplot() +
-  geom_point(data = df.soil, 
-             aes(x = gm.trt, y = n_plantAvail_day, fill = canopy),
-             position = position_jitterdodge(dodge.width = 0.75, 
-                                             jitter.width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
-  geom_errorbar(data = n_results, aes(x = gm.trt, y = emmean,
-                                              ymin = lower.CL, ymax = upper.CL,
-                                              group = canopy),
-                linewidth = 1, position = position_dodge(width = 0.75), width = 0.25) +
-  geom_point(data = n_results, aes(x = gm.trt, y = emmean, fill = canopy),
-             size = 5, position = position_dodge(width = 0.75), shape = 21) +
-  geom_text(data = n_results, 
-            aes(x = gm.trt, y = 1, group = canopy, label = .group),
-            position = position_dodge(width = 0.75), fontface = "bold", size = 6) +
-  scale_x_discrete(labels = c("Ambient", "Weeded")) +
-  scale_fill_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
-  labs(x = expression(paste(bolditalic("Alliaria"), bold(" treatment"))),
-       y = expression(bold("Soil N availability (ppm day"^"-1"*")")),
-       fill = "Canopy") +
-  theme_bw(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),
-        legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25))
-n_plantavailable_plot
-
-## Write plot for soil phosphate and plant-available N
-png("../figs/TT23_soil_nutrients.png", width = 12, height = 5,
-    units = "in", res = 600)
-ggarrange(n_plantavailable_plot, phosphate_plot, common.legend = TRUE,
-          legend = "right", ncol = 2, labels = c("(a)", "(b)"),
-          font.label = list(size = 18))
-dev.off()
-
-
 ##############################################################################
 ## Anet - Tri
 ##############################################################################
 df$anet[c(35, 80, 86)] <- NA
 
 anet.tri <- lmer(
-  log(anet) ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(anet) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(anet.tri)
@@ -209,11 +137,9 @@ cld(emmeans(anet.tri, pairwise~gm.trt*canopy, type = "response"))
 ##############################################################################
 ## Anet - Mai
 ##############################################################################
-df$anet[c(49, 132, 145)] <- NA
-
 anet.mai <- lmer(
-  log(anet) ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+  log(anet) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(anet.mai)
@@ -238,8 +164,8 @@ cld(emmeans(anet.mai, pairwise~gm.trt*canopy, type = "response"))
 df$gsw[c(86)] <- NA
 
 gsw.tri <- lmer(
- gsw ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+ gsw ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+   (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(gsw.tri)
@@ -265,8 +191,8 @@ test(emtrends(gsw.tri, ~1, "phosphate_ppm_day"))
 df$gsw[c(120)] <- NA
 
 gsw.mai <- lmer(
-  gsw ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+  gsw ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(gsw.mai)
@@ -291,8 +217,8 @@ emmeans(gsw.mai, pairwise~gm.trt)
 df$stom.lim[c(228, 229)] <- NA
 
 stomlim.tri <- lmer(
-  log(stom.lim) ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0))
+  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0))
 
 # Check model assumptions
 plot(stomlim.tri)
@@ -315,8 +241,8 @@ emmeans(stomlim.tri, pairwise~canopy, type = "response")
 ## stomatal limitation - Mai
 ##############################################################################
 stom.lim.mai <- lmer(
-  log(stom.lim) ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0))
+  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0))
 
 # Check model assumptions
 plot(stom.lim.mai)
@@ -340,10 +266,9 @@ emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response")
 ##############################################################################
 df$vcmax25[183] <- NA
 
-vcmax.tri <- lmer(log(vcmax25) ~ 
-                    canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
+vcmax.tri <- lmer(
+  log(vcmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(vcmax.tri)
@@ -368,9 +293,8 @@ cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy))
 df$vcmax25[231] <- NA
 
 vcmax.mai <- lmer(
-  log(vcmax25) ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
+  log(vcmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(vcmax.mai)
@@ -390,10 +314,9 @@ r.squaredGLMM(vcmax.mai)
 ##############################################################################
 df$jmax25[183] <- NA
 
-jmax.tri <- lmer(log(jmax25) ~ 
-                    canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
+jmax.tri <- lmer(
+  log(jmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(jmax.tri)
@@ -415,9 +338,8 @@ cld(emmeans(jmax.tri, pairwise~gm.trt*canopy))
 ## Jmax - Mai
 ##############################################################################
 jmax.mai <- lmer(
-  jmax25 ~ canopy * (phosphate_ppm_day + n_plantAvail_day) +
-    gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
+  jmax25 ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(jmax.mai)
@@ -439,12 +361,9 @@ test(emtrends(jmax.mai, ~1, "n_plantAvail_day"))
 ##############################################################################
 ## Jmax : Vcmax - Tri
 ##############################################################################
-df$jmax.vcmax[184] <- NA
-
-jmax.vcmax.tri <- lmer(log(jmax.vcmax) ~ 
-                   canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                   gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
+jmax.vcmax.tri <- lmer(
+  log(jmax.vcmax) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(jmax.vcmax.tri)
@@ -464,10 +383,9 @@ r.squaredGLMM(jmax.vcmax.tri)
 ##############################################################################
 df$jmax.vcmax[c(94, 225, 231)] <- NA
 
-jmax.vcmax.mai <- lmer(log(jmax.vcmax) ~ 
-                         canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                         gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
+jmax.vcmax.mai <- lmer(
+  log(jmax.vcmax) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(jmax.vcmax.mai)
@@ -489,12 +407,11 @@ emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 ##############################################################################
 ## iWUE - Tri
 ##############################################################################
-df$iwue[c(80, 86, 228)] <- NA
+df$iwue[c(80, 86, 158, 159)] <- NA
 
-iwue.tri <- lmer(log(iwue) ~ 
-                         canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                         gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
+iwue.tri <- lmer(
+  log(iwue) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(iwue.tri)
@@ -519,10 +436,9 @@ test(emtrends(iwue.tri, ~1, "phosphate_ppm_day"))
 ##############################################################################
 df$iwue[c(104)] <- NA
 
-iwue.mai <- lmer(log(iwue) ~ 
-                   canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                   gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
+iwue.mai <- lmer(
+  log(iwue) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(iwue.mai)
@@ -543,12 +459,9 @@ emmeans(iwue.mai, pairwise~canopy)
 ##############################################################################
 ## Vcmax25:gs - Tri
 ##############################################################################
-df$iwue[c(80, 86, 228)] <- NA
-
-vcmax.gs.tri <- lmer(log(vcmax.gs) ~ 
-                   canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                   gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
+vcmax.gs.tri <- lmer(
+  log(vcmax.gs) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(vcmax.gs.tri)
@@ -570,10 +483,9 @@ test(emtrends(vcmax.gs.tri, ~1, "phosphate_ppm_day"))
 ##############################################################################
 ## Vcmax25:gs - Mai
 ##############################################################################
-vcmax.gs.mai <- lmer(log(vcmax.gs) ~ 
-                       canopy * (phosphate_ppm_day + n_plantAvail_day) +
-                       gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
+vcmax.gs.mai <- lmer(
+  log(vcmax.gs) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+    (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(vcmax.gs.mai)
@@ -590,3 +502,143 @@ r.squaredGLMM(vcmax.gs.mai)
 
 # Pairwise comparisons
 cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy, type = "response"))
+
+##############################################################################
+## Write Table 1: Soil nutrients
+##############################################################################
+soil.nitrogen <- data.frame(Anova(plant_availableN)) %>%
+  mutate(treatment = row.names(.),
+         chisq_soilN = Chisq,
+         p_soilN = Pr..Chisq.,
+         across(chisq_soilN:p_soilN, round, digits = 3),
+         chisq_soilN = ifelse(chisq_soilN <0.001 & chisq_soilN >= 0, 
+                                "<0.001", chisq_soilN),
+         p_soilN = ifelse(p_soilN <0.001 & p_soilN >= 0, 
+                               "<0.001", p_soilN)) %>%
+  dplyr::select(treatment, Df, chisq_soilN, p_soilN)
+
+soil.nitrate <- data.frame(Anova(nitrate)) %>%
+  mutate(treatment = row.names(.),
+         chisq_nitrate = Chisq,
+         p_nitrate = Pr..Chisq.,
+         across(chisq_nitrate:p_nitrate, round, digits = 3),
+         chisq_nitrate = ifelse(chisq_nitrate < 0.001 & chisq_nitrate >= 0, 
+                              "<0.001", chisq_nitrate),
+         p_nitrate = ifelse(p_nitrate <0.001 & p_nitrate >= 0, 
+                          "<0.001", p_nitrate)) %>%
+  dplyr::select(treatment, chisq_nitrate, p_nitrate)
+
+soil.ammonium <- data.frame(Anova(ammonium)) %>%
+  mutate(treatment = row.names(.),
+         chisq_ammonium = Chisq,
+         p_ammonium = Pr..Chisq.,
+         across(chisq_ammonium:p_ammonium, round, digits = 3),
+         chisq_ammonium = ifelse(chisq_ammonium < 0.001 & chisq_ammonium >= 0, 
+                                "<0.001", chisq_ammonium),
+         p_ammonium = ifelse(p_ammonium <0.001 & p_ammonium >= 0, 
+                            "<0.001", p_ammonium)) %>%
+  dplyr::select(treatment, chisq_ammonium, p_ammonium)
+
+soil.phosphate <- data.frame(Anova(phosphate)) %>%
+  mutate(treatment = row.names(.),
+         chisq_phosphate = Chisq,
+         p_phosphate = Pr..Chisq.,
+         across(chisq_phosphate:p_phosphate, round, digits = 3),
+         chisq_phosphate = ifelse(chisq_phosphate < 0.001 & chisq_phosphate >= 0, 
+                                 "<0.001", chisq_phosphate),
+         p_phosphate = ifelse(p_phosphate <0.001 & p_phosphate >= 0, 
+                             "<0.001", p_phosphate)) %>%
+  dplyr::select(treatment, chisq_phosphate, p_phosphate)
+
+table1 <- soil.nitrogen %>% full_join(soil.nitrate) %>% 
+  full_join(soil.ammonium) %>% full_join(soil.phosphate)
+
+write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
+          row.names = FALSE)
+
+##############################################################################
+## Write Table 2: Gas exchange
+##############################################################################
+anet.tri <- data.frame(Anova(anet.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_anet.tri = Chisq,
+         p_anet.tri = Pr..Chisq.,
+         across(chisq_anet.tri:p_anet.tri, round, digits = 3),
+         chisq_anet.tri = ifelse(chisq_anet.tri < 0.001 & chisq_anet.tri >= 0, 
+                              "<0.001", chisq_anet.tri),
+         p_anet.tri = ifelse(p_anet.tri <0.001 & p_anet.tri >= 0, 
+                          "<0.001", p_anet.tri)) %>%
+  dplyr::select(treatment, Df, chisq_anet.tri, p_anet.tri)
+
+anet.mai <- data.frame(Anova(anet.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_anet.mai = Chisq,
+         p_anet.mai = Pr..Chisq.,
+         across(chisq_anet.mai:p_anet.mai, round, digits = 3),
+         chisq_anet.mai = ifelse(chisq_anet.mai < 0.001 & chisq_anet.mai >= 0, 
+                                 "<0.001", chisq_anet.mai),
+         p_anet.mai = ifelse(p_anet.mai <0.001 & p_anet.mai >= 0, 
+                             "<0.001", p_anet.mai)) %>%
+  dplyr::select(treatment, chisq_anet.mai, p_anet.mai)
+
+gsw.tri <- data.frame(Anova(gsw.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_gsw.tri = Chisq,
+         p_gsw.tri = Pr..Chisq.,
+         across(chisq_gsw.tri:p_gsw.tri, round, digits = 3),
+         chisq_gsw.tri = ifelse(chisq_gsw.tri < 0.001 & chisq_gsw.tri >= 0, 
+                                 "<0.001", chisq_gsw.tri),
+         p_gsw.tri = ifelse(p_gsw.tri <0.001 & p_gsw.tri >= 0, 
+                             "<0.001", p_gsw.tri)) %>%
+  dplyr::select(treatment, chisq_gsw.tri, p_gsw.tri)
+
+gsw.mai <- data.frame(Anova(gsw.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_gsw.mai = Chisq,
+         p_gsw.mai = Pr..Chisq.,
+         across(chisq_gsw.mai:p_gsw.mai, round, digits = 3),
+         chisq_gsw.mai = ifelse(chisq_gsw.mai < 0.001 & chisq_gsw.mai >= 0, 
+                                 "<0.001", chisq_gsw.mai),
+         p_gsw.mai = ifelse(p_gsw.mai <0.001 & p_gsw.mai >= 0, 
+                             "<0.001", p_gsw.mai)) %>%
+  dplyr::select(treatment, chisq_gsw.mai, p_gsw.mai)
+
+
+stom.lim.tri <- data.frame(Anova(stomlim.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_stom.lim.tri = Chisq,
+         p_stom.lim.tri = Pr..Chisq.,
+         across(chisq_stom.lim.tri:p_stom.lim.tri, round, digits = 3),
+         chisq_stom.lim.tri = ifelse(chisq_stom.lim.tri < 0.001 & 
+                                       chisq_stom.lim.tri >= 0, 
+                                "<0.001", chisq_stom.lim.tri),
+         p_stom.lim.tri = ifelse(p_stom.lim.tri <0.001 & p_stom.lim.tri >= 0, 
+                            "<0.001", p_stom.lim.tri)) %>%
+  dplyr::select(treatment, chisq_stom.lim.tri, p_stom.lim.tri)
+
+stom.lim.mai <- data.frame(Anova(stom.lim.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_stom.lim.mai = Chisq,
+         p_stom.lim.mai = Pr..Chisq.,
+         across(chisq_stom.lim.mai:p_stom.lim.mai, round, digits = 3),
+         chisq_stom.lim.mai = ifelse(chisq_stom.lim.mai < 0.001 & 
+                                       chisq_stom.lim.mai >= 0, 
+                                "<0.001", chisq_stom.lim.mai),
+         p_stom.lim.mai = ifelse(p_stom.lim.mai <0.001 & p_stom.lim.mai >= 0, 
+                            "<0.001", p_stom.lim.mai)) %>%
+  dplyr::select(treatment, chisq_stom.lim.mai, p_stom.lim.mai)
+
+table2 <- anet.tri %>% full_join(gsw.tri) %>% full_join(stom.lim.tri) %>% 
+  full_join(anet.mai) %>% full_join(gsw.mai) %>% full_join(stom.lim.mai)
+
+write.csv(table2, "../drafts/tables/TT23_table2_gas_exchange.csv",
+          row.names = FALSE)
+
+
+
+
+
+
+
+
+
