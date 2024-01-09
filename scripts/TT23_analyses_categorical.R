@@ -137,6 +137,8 @@ cld(emmeans(anet.tri, pairwise~gm.trt*canopy, type = "response"))
 ##############################################################################
 ## Anet - Mai
 ##############################################################################
+df$anet[49] <- NA
+
 anet.mai <- lmer(
   log(anet) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
     (1 | plot), data = subset(df, spp == "Mai"))
@@ -235,7 +237,8 @@ r.squaredGLMM(stomlim.tri)
 
 # Pairwise comparisons
 emmeans(stomlim.tri, pairwise~canopy, type = "response")
-
+emmeans(stomlim.tri, pairwise~gm.trt, type = "response")
+test(emtrends(stomlim.tri, ~1, "phosphate_ppm_day"))
 
 ##############################################################################
 ## stomatal limitation - Mai
@@ -258,8 +261,8 @@ Anova(stom.lim.mai)
 r.squaredGLMM(stom.lim.mai)
 
 # Pairwise comparisons
-emmeans(stom.lim.mai, pairwise~canopy)
-emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response")
+emmeans(stom.lim.mai, pairwise~gm.trt, type = "response")
+cld(emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response"))
 
 ##############################################################################
 ## Vcmax - Tri
