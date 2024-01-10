@@ -556,8 +556,8 @@ soil.phosphate <- data.frame(Anova(phosphate)) %>%
 table1 <- soil.nitrogen %>% full_join(soil.nitrate) %>% 
   full_join(soil.ammonium) %>% full_join(soil.phosphate)
 
-write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
-          row.names = FALSE)
+#write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
+#          row.names = FALSE)
 
 ##############################################################################
 ## Write Table 2: Gas exchange
@@ -634,13 +634,136 @@ stom.lim.mai <- data.frame(Anova(stom.lim.mai)) %>%
 table2 <- anet.tri %>% full_join(gsw.tri) %>% full_join(stom.lim.tri) %>% 
   full_join(anet.mai) %>% full_join(gsw.mai) %>% full_join(stom.lim.mai)
 
-write.csv(table2, "../drafts/tables/TT23_table2_gas_exchange.csv",
+#write.csv(table2, "../drafts/tables/TT23_table2_gas_exchange.csv",
+#          row.names = FALSE)
+
+##############################################################################
+## Write Table 3: Indices of photosynthetic capacity
+##############################################################################
+vcmax.tri <- data.frame(Anova(vcmax.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_vcmax.tri = Chisq,
+         p_vcmax.tri = Pr..Chisq.,
+         across(chisq_vcmax.tri:p_vcmax.tri, round, digits = 3),
+         chisq_vcmax.tri = ifelse(chisq_vcmax.tri < 0.001 & chisq_vcmax.tri >= 0, 
+                                 "<0.001", chisq_vcmax.tri),
+         p_vcmax.tri = ifelse(p_vcmax.tri <0.001 & p_vcmax.tri >= 0, 
+                             "<0.001", p_vcmax.tri)) %>%
+  dplyr::select(treatment, Df, chisq_vcmax.tri, p_vcmax.tri)
+
+vcmax.mai <- data.frame(Anova(vcmax.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_vcmax.mai = Chisq,
+         p_vcmax.mai = Pr..Chisq.,
+         across(chisq_vcmax.mai:p_vcmax.mai, round, digits = 3),
+         chisq_vcmax.mai = ifelse(chisq_vcmax.mai < 0.001 & chisq_vcmax.mai >= 0, 
+                                 "<0.001", chisq_vcmax.mai),
+         p_vcmax.mai = ifelse(p_vcmax.mai <0.001 & p_vcmax.mai >= 0, 
+                             "<0.001", p_vcmax.mai)) %>%
+  dplyr::select(treatment, chisq_vcmax.mai, p_vcmax.mai)
+
+jmax.tri <- data.frame(Anova(jmax.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_jmax.tri = Chisq,
+         p_jmax.tri = Pr..Chisq.,
+         across(chisq_jmax.tri:p_jmax.tri, round, digits = 3),
+         chisq_jmax.tri = ifelse(chisq_jmax.tri < 0.001 & chisq_jmax.tri >= 0, 
+                                  "<0.001", chisq_jmax.tri),
+         p_jmax.tri = ifelse(p_jmax.tri <0.001 & p_jmax.tri >= 0, 
+                              "<0.001", p_jmax.tri)) %>%
+  dplyr::select(treatment, Df, chisq_jmax.tri, p_jmax.tri)
+
+jmax.mai <- data.frame(Anova(jmax.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_jmax.mai = Chisq,
+         p_jmax.mai = Pr..Chisq.,
+         across(chisq_jmax.mai:p_jmax.mai, round, digits = 3),
+         chisq_jmax.mai = ifelse(chisq_jmax.mai < 0.001 & chisq_jmax.mai >= 0, 
+                                  "<0.001", chisq_jmax.mai),
+         p_jmax.mai = ifelse(p_jmax.mai <0.001 & p_jmax.mai >= 0, 
+                              "<0.001", p_jmax.mai)) %>%
+  dplyr::select(treatment, chisq_jmax.mai, p_jmax.mai)
+
+jvmax.tri <- data.frame(Anova(jmax.vcmax.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_jvmax.tri = Chisq,
+         p_jvmax.tri = Pr..Chisq.,
+         across(chisq_jvmax.tri:p_jvmax.tri, round, digits = 3),
+         chisq_jvmax.tri = ifelse(chisq_jvmax.tri < 0.001 & chisq_jvmax.tri >= 0, 
+                                 "<0.001", chisq_jvmax.tri),
+         p_jvmax.tri = ifelse(p_jvmax.tri <0.001 & p_jvmax.tri >= 0, 
+                             "<0.001", p_jvmax.tri)) %>%
+  dplyr::select(treatment, Df, chisq_jvmax.tri, p_jvmax.tri)
+
+jvmax.mai <- data.frame(Anova(jmax.vcmax.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_jvmax.mai = Chisq,
+         p_jvmax.mai = Pr..Chisq.,
+         across(chisq_jvmax.mai:p_jvmax.mai, round, digits = 3),
+         chisq_jvmax.mai = ifelse(chisq_jvmax.mai < 0.001 & chisq_jvmax.mai >= 0, 
+                                 "<0.001", chisq_jvmax.mai),
+         p_jvmax.mai = ifelse(p_jvmax.mai <0.001 & p_jvmax.mai >= 0, 
+                             "<0.001", p_jvmax.mai)) %>%
+  dplyr::select(treatment, chisq_jvmax.mai, p_jvmax.mai)
+
+table3 <- vcmax.tri %>% full_join(jmax.tri) %>%  full_join(jvmax.tri) %>% 
+  full_join(vcmax.mai) %>%  full_join(jmax.mai) %>% full_join(jvmax.mai)
+#write.csv(table3, "../drafts/tables/TT23_table3_photoCapacity.csv", 
+#          row.names = FALSE)
+
+##############################################################################
+## Write Table 4: iWUE and Vcmax:gsw
+##############################################################################
+
+iwue.tri <- data.frame(Anova(iwue.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_iwue.tri = Chisq,
+         p_iwue.tri = Pr..Chisq.,
+         across(chisq_iwue.tri:p_iwue.tri, round, digits = 3),
+         chisq_iwue.tri = ifelse(chisq_iwue.tri < 0.001 & chisq_iwue.tri >= 0, 
+                                  "<0.001", chisq_iwue.tri),
+         p_iwue.tri = ifelse(p_iwue.tri <0.001 & p_iwue.tri >= 0, 
+                              "<0.001", p_iwue.tri)) %>%
+  dplyr::select(treatment, Df, chisq_iwue.tri, p_iwue.tri)
+
+iwue.mai <- data.frame(Anova(iwue.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_iwue.mai = Chisq,
+         p_iwue.mai = Pr..Chisq.,
+         across(chisq_iwue.mai:p_iwue.mai, round, digits = 3),
+         chisq_iwue.mai = ifelse(chisq_iwue.mai < 0.001 & chisq_iwue.mai >= 0, 
+                                  "<0.001", chisq_iwue.mai),
+         p_iwue.mai = ifelse(p_iwue.mai <0.001 & p_iwue.mai >= 0, 
+                              "<0.001", p_iwue.mai)) %>%
+  dplyr::select(treatment, chisq_iwue.mai, p_iwue.mai)
+
+vcmax.gs.tri <- data.frame(Anova(vcmax.gs.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_vcmax.gs.tri = Chisq,
+         p_vcmax.gs.tri = Pr..Chisq.,
+         across(chisq_vcmax.gs.tri:p_vcmax.gs.tri, round, digits = 3),
+         chisq_vcmax.gs.tri = ifelse(chisq_vcmax.gs.tri < 0.001 & 
+                                       chisq_vcmax.gs.tri >= 0, 
+                                     "<0.001", chisq_vcmax.gs.tri),
+         p_iwue.tri = ifelse(p_vcmax.gs.tri <0.001 & p_vcmax.gs.tri >= 0, 
+                             "<0.001", p_vcmax.gs.tri)) %>%
+  dplyr::select(treatment, Df, chisq_vcmax.gs.tri, p_vcmax.gs.tri)
+
+vcmax.gs.mai <- data.frame(Anova(vcmax.gs.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_vcmax.gs.mai = Chisq,
+         p_vcmax.gs.mai = Pr..Chisq.,
+         across(chisq_vcmax.gs.mai:p_vcmax.gs.mai, round, digits = 3),
+         chisq_vcmax.gs.mai = ifelse(chisq_vcmax.gs.mai < 0.001 & chisq_vcmax.gs.mai >= 0, 
+                                 "<0.001", chisq_vcmax.gs.mai),
+         p_vcmax.gs.mai = ifelse(p_vcmax.gs.mai <0.001 & p_vcmax.gs.mai >= 0, 
+                             "<0.001", p_vcmax.gs.mai)) %>%
+  dplyr::select(treatment, chisq_vcmax.gs.mai, p_vcmax.gs.mai)
+
+table4 <- iwue.tri %>% full_join(vcmax.gs.tri) %>% full_join(iwue.mai) %>%
+   full_join(vcmax.gs.mai)
+write.csv(table4, "../drafts/tables/TT23_table4_iWUE_vcmaxgs.csv",
           row.names = FALSE)
-
-
-
-
-
 
 
 

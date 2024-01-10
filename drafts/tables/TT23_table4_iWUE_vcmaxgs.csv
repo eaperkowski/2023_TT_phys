@@ -1,0 +1,6 @@
+treatment,Df,chisq_iwue.tri,p_iwue.tri,chisq_vcmax.gs.tri,p_vcmax.gs.tri,chisq_iwue.mai,p_iwue.mai,chisq_vcmax.gs.mai,p_vcmax.gs.mai
+gm.trt,1,14.008,<0.001,2.825,0.093,17.773,<0.001,13.523,<0.001
+canopy,1,221.534,<0.001,95.61,<0.001,3.769,0.052,2.3,0.129
+n_plantAvail_day,1,0.319,0.572,1.838,0.175,0.06,0.806,0.005,0.944
+phosphate_ppm_day,1,8.963,0.003,3.269,0.071,0.245,0.62,0.588,0.443
+gm.trt:canopy,1,12.898,<0.001,0.438,0.508,1.076,0.299,6.218,0.013
