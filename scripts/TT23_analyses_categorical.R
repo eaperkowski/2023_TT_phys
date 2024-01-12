@@ -313,8 +313,6 @@ r.squaredGLMM(vcmax.mai)
 ##############################################################################
 ## Jmax - Tri
 ##############################################################################
-df$jmax25[183] <- NA
-
 jmax.tri <- lmer(
   log(jmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
@@ -412,7 +410,7 @@ emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 ##############################################################################
 ## iWUE - Tri
 ##############################################################################
-df$iwue[c(80, 86)] <- NA
+df$iwue[c(80, 86, 228)] <- NA
 
 iwue.tri <- lmer(
   log(iwue) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 

@@ -15,7 +15,8 @@ df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
   mutate(gm.trt = factor(gm.trt, levels = c( "weeded", "invaded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")),
          spp = factor(spp, levels = c("Tri", "Mai", "Ari")),
-         vcmax.gs = vcmax25 / gsw)
+         vcmax.gs = vcmax25 / gsw) %>%
+  unite(col = "gm.trt_canopy", gm.trt, canopy, sep = "_", remove = FALSE)
 head(df)
 
 ## Read and subset soil dataset
@@ -27,13 +28,13 @@ df.soil <- df %>%
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
 
 ## Remove outliers
-df$anet[c(35, 49, 80, 86)] <- NA
-df$gsw[c(86, 120)] <- NA
+df$anet[c(35, 41, 71, 80, 86, 116, 120)] <- NA
+df$gsw[c(120)] <- NA
 df$stom.lim[c(228, 229)] <- NA
 df$vcmax25[c(183, 231)] <- NA
-df$jmax25[183] <- NA
-df$jmax.vcmax[c(94, 225, 231)] <- NA
-df$iwue[c(80, 86, 104, 158, 159)] <- NA
+df$jmax25[c(18)] <- NA
+df$jmax.vcmax[c(184, 225, 231)] <- NA
+df$iwue[c(80, 86, 104, 228)] <- NA
 
 ## Create models for soil data
 nitrate <- lmer(
@@ -47,52 +48,52 @@ plant_availableN <- lmer(
 
 ## Create models for photosynthesis data
 anet.tri <- lmer(
-  log(anet) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  anet ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 anet.mai <- lmer(
-  log(anet) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  anet ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 gsw.tri <- lmer(
-  gsw ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
-    (1 | plot), data = subset(df, spp == "Tri"))
+ gsw ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
+   (1 | plot), data = subset(df, spp == "Tri"))
 gsw.mai <- lmer(
-  gsw ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  gsw ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 stomlim.tri <- lmer(
-  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(stom.lim) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0))
 stom.lim.mai <- lmer(
-  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(stom.lim) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0))
 vcmax.tri <- lmer(
-  log(vcmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(vcmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 vcmax.mai <- lmer(
-  log(vcmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(vcmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 jmax.tri <- lmer(
-  log(jmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(jmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 jmax.mai <- lmer(
-  jmax25 ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  jmax25 ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 jmax.vcmax.tri <- lmer(
-  log(jmax.vcmax) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(jmax.vcmax) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 jmax.vcmax.mai <- lmer(
-  log(jmax.vcmax) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(jmax.vcmax) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 iwue.tri <- lmer(
-  log(iwue) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(iwue) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 iwue.mai <- lmer(
-  log(iwue) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(iwue) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 vcmax.gs.tri <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(vcmax.gs) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 vcmax.gs.mai <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(vcmax.gs) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai"))
 
 ## Add code for facet labels
@@ -249,7 +250,7 @@ nh4_plot
 ##############################################################################
 anet_tri_results <- cld(emmeans(anet.tri, ~gm.trt*canopy, type = "response"), 
                 Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "B", "A", "A"))
+  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
 
 anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = canopy, y = anet, fill = gm.trt)) +
@@ -279,7 +280,8 @@ anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
         legend.text = element_text(hjust = 0),
         panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
-        strip.text = element_text(face = "italic", size = 18))
+        strip.text = element_text(face = "italic", size = 18)) +
+  guides(fill = guide_legend())
 anet_tri_plot
 
 ##############################################################################
@@ -287,7 +289,7 @@ anet_tri_plot
 ##############################################################################
 anet_mai_results <- cld(emmeans(anet.mai, ~gm.trt*canopy, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "B", "A", "A"))
+  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
 
 anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                         aes(x = canopy, y = anet, fill = gm.trt)) +
@@ -325,7 +327,7 @@ anet_mai_plot
 ##############################################################################
 gsw_tri_results <- cld(emmeans(gsw.tri, ~gm.trt*canopy, type = "response"), 
                        Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "BC", "AB", "B"))
+  data.frame() %>% mutate(.group = c("B", "AB", "AB", "A"))
 
 gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                   aes(x = canopy, y = gsw, fill = gm.trt)) +
@@ -359,11 +361,11 @@ gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
 gsw_tri_plot
 
 ##############################################################################
-## Stomatal conductance - Maianthemum
+## Stomatal conductance - Maianthemum (3-way interaction)
 ##############################################################################
 gsw_mai_results <- cld(emmeans(gsw.mai, ~gm.trt*canopy, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("D", "C", "B", "A"))
+  data.frame() %>% mutate(.group = c("C", "BC", "AB", "A"))
 
 gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                    aes(x = canopy, y = gsw, fill = gm.trt)) +
@@ -477,7 +479,7 @@ stomlim_mai_plot
 ##############################################################################
 vcmax_tri_results <- cld(emmeans(vcmax.tri, ~gm.trt*canopy, type = "response"), 
                            Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "B", "A", "A"), spp = "Tri")
+  data.frame() %>% mutate(.group = c("C", "B", "A", "A"), spp = "Tri")
 
 vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                            aes(x = canopy, y = vcmax25, fill = gm.trt)) +
@@ -591,7 +593,7 @@ jmax_tri_plot
 ##############################################################################
 jmax_mai_results <- cld(emmeans(jmax.mai, ~gm.trt*canopy, type = "response"), 
                          Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
+  data.frame() %>% mutate(.group = c("C", "C", "B", "A"))
 
 jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                          aes(x = canopy, y = jmax25, fill = gm.trt)) +
@@ -629,7 +631,7 @@ jmax_mai_plot
 ##############################################################################
 jvmax_tri_results <- cld(emmeans(jmax.vcmax.tri, ~gm.trt*canopy, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame()
+  data.frame() %>% mutate(.group = c("B", "AB", "A", "A"))
 
 jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = canopy, y = jmax.vcmax, fill = gm.trt)) +
@@ -705,7 +707,7 @@ jvmax_mai_plot
 ##############################################################################
 iwue_tri_results <- cld(emmeans(iwue.tri, ~gm.trt*canopy, type = "response"), 
                          Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "B", "A", "A"))
+  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
 
 iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                          aes(x = canopy, y = iwue, fill = gm.trt)) +
