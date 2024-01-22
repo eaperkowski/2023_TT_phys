@@ -139,11 +139,10 @@ n_plantavailable_plot <- ggplot(data = df.soil,
   labs(x = "Tree canopy status",
        y = expression(bold("Soil inorg. N (ppm day"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25),
         panel.grid.minor.y = element_blank())
 n_plantavailable_plot
 
@@ -177,11 +176,10 @@ phosphate_plot <- ggplot(data = df.soil,
   labs(x = "Tree canopy status",
        y = expression(bold("Soil P (ppm day"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25),
         panel.grid.minor.y = element_blank())
 phosphate_plot
 
@@ -214,11 +212,10 @@ no3_plot <- ggplot(data = df.soil,
   labs(x = "Tree canopy status",
        y = expression(bold("Soil NO"["3"]*"-N (ppm day"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25),
         panel.grid.minor.y = element_blank())
 no3_plot
 
@@ -251,11 +248,10 @@ nh4_plot <- ggplot(data = df.soil,
   labs(x = "Tree canopy status",
        y = expression(bold("Soil NH"["4"]*"-N (ppm day"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.25),
         panel.grid.minor.y = element_blank())
 nh4_plot
 
@@ -282,11 +278,10 @@ anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("A")["net"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -300,7 +295,7 @@ Anova(anet.mai)
 
 anet_mai_results <- cld(emmeans(anet.mai, ~gm.trt, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
+  data.frame()
 
 anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                         aes(x = gm.trt, y = anet, fill = gm.trt)) +
@@ -316,11 +311,10 @@ anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("A")["net"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -346,11 +340,10 @@ gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("g")["sw"]*" (mol m"^"-2"*" s"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -361,10 +354,6 @@ gsw_tri_plot
 ## Stomatal conductance - Maianthemum
 ##############################################################################
 Anova(gsw.mai)
-
-gsw_mai_results <- cld(emmeans(gsw.mai, ~gm.trt*canopy, type = "response"), 
-                        Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "BC", "AB", "A"))
 
 gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                        aes(x = gm.trt, y = gsw, fill = gm.trt)) +
@@ -380,11 +369,10 @@ gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("g")["sw"]*" (mol m"^"-2"*" s"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -410,11 +398,10 @@ stomlim_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = "Stom. limitation (unitless)") +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -440,11 +427,10 @@ stomlim_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = "Stom. limitation (unitless)") +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -482,53 +468,10 @@ vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
-        strip.background = element_blank(),
-        strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank())
-vcmax_tri_plot
-
-##############################################################################
-## Vcmax - Tri
-##############################################################################
-Anova(vcmax.tri)
-test(emtrends(vcmax.tri, pairwise~gm.trt*canopy, "n_plantAvail_day"))
-
-vcmax_tri_results <- data.frame()
-
-vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
-                         aes(x = n_plantAvail_day, y = vcmax25, fill = gm.canopy)) +
-  geom_point() +
-  geom_smooth(method = 'lm')
-  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
-               position = position_dodge(width = 0.75)) +
-  geom_boxplot(position = position_dodge(0.75),
-               width = 0.5, outlier.shape = NA) +
-  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
-                                             jitter.width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = vcmax_tri_results, 
-            aes(x = canopy, y = 200, group = gm.trt, label = .group),
-            position = position_dodge(width = 0.75), 
-            fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c(expression(italic("Alliaria")*" weeded"), 
-                               expression(italic("Alliaria")*" present"))) +
-  scale_x_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = "Tree canopy status",
-       y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
-       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
-  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),
-        legend.title = element_text(face = "bold"),
-        legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -563,11 +506,10 @@ vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -602,11 +544,10 @@ jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -641,11 +582,10 @@ jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -680,11 +620,10 @@ jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -719,11 +658,10 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank())
@@ -746,11 +684,10 @@ iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold("Intrinsic WUE ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -776,11 +713,10 @@ iwue_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold("Intrinsic WUE ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -804,11 +740,10 @@ vcmaxgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -834,11 +769,10 @@ vcmaxgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
        y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
-  theme_bw(base_size = 18) +
+  theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         legend.title = element_text(face = "bold"),
         legend.text = element_text(hjust = 0),
-        panel.border = element_rect(linewidth = 1.25),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
         panel.grid.minor.y = element_blank()) +
@@ -884,7 +818,7 @@ dev.off()
 ## Figure 4: Resource use efficiency
 ##############################################################################
 png("../drafts/figs/TT23_fig4_nitrogenWater_tradeoffs.png", 
-    width = 8, height = 8, units = "in", res = 600)
+    width = 7, height = 8, units = "in", res = 600)
 ggarrange(iwue_tri_plot, iwue_mai_plot, vcmaxgs_tri_plot, vcmaxgs_mai_plot,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2, 
           align = "hv", labels = c("(a)", "(b)", "(c)", "(d)"), 

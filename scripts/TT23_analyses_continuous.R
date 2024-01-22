@@ -25,10 +25,10 @@ df.soil <- df %>%
 ##############################################################################
 ## Anet - Tri
 ##############################################################################
-df$anet[c(35, 80, 86)] <- NA
+df$anet[c(35, 80, 86, 116)] <- NA
 
 anet.tri <- lmer(
-  log(anet) ~ total_subplot * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  anet ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri" & gm.trt == "invaded"))
 
 # Check model assumptions
@@ -45,16 +45,18 @@ Anova(anet.tri)
 r.squaredGLMM(anet.tri)
 
 # Pairwise comparisons
-test(emtrends(anet.tri, ~canopy, "total_subplot"))
+test(emtrends(anet.tri, ~phosphate_ppm_day*canopy, "total_subplot",
+              at = list(phosphate_ppm_day = c(0.01, 0.02, 0.04))))
+
 emmeans(anet.tri, pairwise~canopy)
 
 ##############################################################################
 ## Anet - Mai
 ##############################################################################
-df$anet[49] <- NA
+df$anet[c(71, 120)] <- NA
 
 anet.mai <- lmer(
-  log(anet) ~ total_subplot * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  anet ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Mai" & gm.trt == "invaded"))
 
 # Check model assumptions
@@ -71,16 +73,14 @@ Anova(anet.mai)
 r.squaredGLMM(anet.mai)
 
 # Pairwise comparisons
-test(emtrends(anet.mai, ~canopy, "total_subplot"))
+test(emtrends(anet.mai, ~1, "total_subplot"))
 emmeans(anet.tri, pairwise~canopy)
 
 ##############################################################################
 ## gs - Tri
 ##############################################################################
-df$gsw[c(86)] <- NA
-
 gsw.tri <- lmer(
- gsw ~ total_subplot * canopy + n_plantAvail_day + phosphate_ppm_day + 
+ gsw ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
    (1 | plot), data = subset(df, spp == "Tri" & gm.trt == "invaded"))
 
 # Check model assumptions
@@ -98,17 +98,16 @@ r.squaredGLMM(gsw.tri)
 
 # Pairwise comparisons
 emmeans(gsw.tri, pairwise~canopy)
-emmeans(gsw.tri, pairwise~gm.trt)
 test(emtrends(gsw.tri, ~1, "phosphate_ppm_day"))
 
 ##############################################################################
 ## gs - Mai
 ##############################################################################
-df$gsw[c(120)] <- NA
+df$gsw[120] <- NA
 
 gsw.mai <- lmer(
-  gsw ~ total_subplot * canopy + n_plantAvail_day + phosphate_ppm_day + 
-    (1 | plot), data = subset(df, spp == "Mai"))
+  gsw ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
+    (1 | plot), data = subset(df, spp == "Mai" & gm.trt == "invaded"))
 
 # Check model assumptions
 plot(gsw.mai)
@@ -124,17 +123,19 @@ Anova(gsw.mai)
 r.squaredGLMM(gsw.mai)
 
 # Pairwise comparisons
-test(emtrends(anet.mai, ~canopy, "total_subplot"))
+test(emtrends(anet.mai, ~n_plantAvail_day, "total_subplot",
+     at = list(n_plantAvail_day = c(0.1, 0.5, 0.9))))
+
 emmeans(anet.tri, pairwise~canopy)
 
 ##############################################################################
 ## stomatal limitation - Tri
 ##############################################################################
-df$stom.lim[c(228, 229)] <- NA
+df$stom.lim[c(170)] <- NA
 
 stomlim.tri <- lmer(
-  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
-    (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0))
+  log(stom.lim) ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
+    (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0 & gm.trt == "invaded"))
 
 # Check model assumptions
 plot(stomlim.tri)
@@ -150,16 +151,18 @@ Anova(stomlim.tri)
 r.squaredGLMM(stomlim.tri)
 
 # Pairwise comparisons
-emmeans(stomlim.tri, pairwise~canopy, type = "response")
-emmeans(stomlim.tri, pairwise~gm.trt, type = "response")
-test(emtrends(stomlim.tri, ~1, "phosphate_ppm_day"))
+test(emtrends(stomlim.tri, ~phosphate_ppm_day*canopy, "total_subplot",
+              at = list(phosphate_ppm_day = c(0.01, 0.02, 0.04))))
+test(emtrends(stomlim.tri, ~n_plantAvail_day*canopy, "total_subplot",
+              at = list(n_plantAvail_day = c(0.1, 0.5, 0.9))))
+
 
 ##############################################################################
 ## stomatal limitation - Mai
 ##############################################################################
 stom.lim.mai <- lmer(
-  log(stom.lim) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
-    (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0))
+  log(stom.lim) ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
+    (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0 & gm.trt == "invaded"))
 
 # Check model assumptions
 plot(stom.lim.mai)
@@ -175,8 +178,8 @@ Anova(stom.lim.mai)
 r.squaredGLMM(stom.lim.mai)
 
 # Pairwise comparisons
-emmeans(stom.lim.mai, pairwise~gm.trt, type = "response")
-cld(emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response"))
+test(emtrends(stom.lim.mai, pairwise~canopy, "total_subplot"))
+cld(emmeans(stom.lim.mai, pairwise~canopy, type = "response"))
 
 ##############################################################################
 ## Vcmax - Tri
@@ -184,7 +187,7 @@ cld(emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response"))
 df$vcmax25[183] <- NA
 
 vcmax.tri <- lmer(
-  log(vcmax25) ~ gm.trt * canopy + n_plantAvail_day + phosphate_ppm_day + 
+  log(vcmax25) ~ total_subplot * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
     (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
@@ -201,6 +204,10 @@ Anova(vcmax.tri)
 r.squaredGLMM(vcmax.tri)
 
 # Pairwise comparisons
+test(emtrends(vcmax.tri, ~n_plantAvail_day*canopy, "total_subplot",
+              at = list(n_plantAvail_day = c(0.1, 0.5, 0.9))))
+
+
 emmeans(vcmax.tri, pairwise~gm.trt, type = "response")
 cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy))
 
