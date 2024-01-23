@@ -32,13 +32,13 @@ df.soil <- df %>%
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
 
 ## Remove outliers
-df$anet[c(35, 41, 71, 80, 86, 116, 120)] <- NA
-df$gsw[c(120)] <- NA
+df$anet[c(35, 71, 80, 86, 116, 120)] <- NA
+df$gsw[c(86, 120)] <- NA
 df$stom.lim[c(228, 229)] <- NA
 df$vcmax25[c(183, 231)] <- NA
-df$jmax25[c(18)] <- NA
-df$jmax.vcmax[c(184, 225, 231)] <- NA
-df$iwue[c(80, 86, 104, 228)] <- NA
+df$jmax25[183] <- NA
+df$jmax.vcmax[c(94, 184, 224, 225, 231)] <- NA
+df$iwue[c(80, 86, 104)] <- NA
 
 ## Create models for soil data
 nitrate <- lmer(
@@ -51,54 +51,38 @@ plant_availableN <- lmer(
   n_plantAvail_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 ## Create models for photosynthesis data
-anet.tri <- lmer(
-  anet ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-anet.mai <- lmer(
-  anet ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-gsw.tri <- lmer(
- gsw ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-   (1 | plot), data = subset(df, spp == "Tri"))
-gsw.mai <- lmer(
-  gsw ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-stomlim.tri <- lmer(
-  log(stom.lim) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri" & stom.lim > 0))
-stom.lim.mai <- lmer(
-  log(stom.lim) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai" & stom.lim > 0))
-vcmax.tri <- lmer(
-  log(vcmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-vcmax.mai <- lmer(
-  log(vcmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-jmax.tri <- lmer(
-  log(jmax25) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-jmax.mai <- lmer(
-  jmax25 ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-jmax.vcmax.tri <- lmer(
-  log(jmax.vcmax) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-jmax.vcmax.mai <- lmer(
-  log(jmax.vcmax) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-iwue.tri <- lmer(
-  log(iwue) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-iwue.mai <- lmer(
-  log(iwue) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
-vcmax.gs.tri <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Tri"))
-vcmax.gs.mai <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy * (n_plantAvail_day + phosphate_ppm_day) + 
-    (1 | plot), data = subset(df, spp == "Mai"))
+anet.tri <- lmer(anet ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Tri"))
+anet.mai <- lmer(anet ~ gm.trt * canopy  + (1 | plot),
+                 data = subset(df, spp == "Mai"))
+gsw.tri <- lmer(gsw ~ gm.trt * canopy + (1 | plot),
+                data = subset(df, spp == "Tri"))
+gsw.mai <- lmer(gsw ~ gm.trt * canopy + (1 | plot),
+                data = subset(df, spp == "Mai"))
+stomlim.tri <- lmer(log(stom.lim) ~ gm.trt * canopy  + (1 | plot),
+                    data = subset(df, spp == "Tri" & stom.lim > 0))
+stom.lim.mai <- lmer(log(stom.lim) ~ gm.trt * canopy + (1 | plot),
+                     data = subset(df, spp == "Mai" & stom.lim > 0))
+vcmax.tri <- lmer(log(vcmax25) ~ gm.trt * canopy + (1 | plot),
+                  data = subset(df, spp == "Tri"))
+vcmax.mai <- lmer(log(vcmax25) ~ gm.trt * canopy  + (1 | plot),
+                  data = subset(df, spp == "Mai"))
+jmax.tri <- lmer(log(jmax25) ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Tri"))
+jmax.mai <- lmer(jmax25 ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Mai"))
+jmax.vcmax.tri <- lmer(log(jmax.vcmax) ~ gm.trt * canopy + (1 | plot),
+                       data = subset(df, spp == "Tri"))
+jmax.vcmax.mai <- lmer(log(jmax.vcmax) ~ gm.trt * canopy + (1 | plot),
+                       data = subset(df, spp == "Mai"))
+iwue.tri <- lmer(log(iwue) ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Tri"))
+iwue.mai <- lmer(log(iwue) ~ gm.trt * canopy  + (1 | plot),
+                 data = subset(df, spp == "Mai"))
+vcmax.gs.tri <- lmer(log(vcmax.gs) ~ gm.trt * canopy + (1 | plot),
+                     data = subset(df, spp == "Tri"))
+vcmax.gs.mai <- lmer(log(vcmax.gs) ~ gm.trt * canopy + (1 | plot),
+                     data = subset(df, spp == "Mai"))
 
 ## Add code for facet labels
 facet.labs <- c("Trillium", "Maianthemum")
@@ -295,7 +279,7 @@ Anova(anet.mai)
 
 anet_mai_results <- cld(emmeans(anet.mai, ~gm.trt, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame()
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                         aes(x = gm.trt, y = anet, fill = gm.trt)) +
@@ -480,6 +464,8 @@ vcmax_tri_plot
 ##############################################################################
 ## Vcmax - Mai
 ##############################################################################
+Anova(vcmax.mai)
+
 vcmax_mai_results <- cld(emmeans(vcmax.mai, ~gm.trt*canopy, type = "response"), 
                          Letters = LETTERS) %>% 
   data.frame() %>% mutate(.group = c("B", "B", "A", "A"), spp = "Mai")
@@ -556,9 +542,11 @@ jmax_tri_plot
 ##############################################################################
 ## Jmax - Mai
 ##############################################################################
+Anova(jmax.mai)
+
 jmax_mai_results <- cld(emmeans(jmax.mai, ~gm.trt*canopy, type = "response"), 
                          Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "C", "B", "A"))
+  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
 
 jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                          aes(x = canopy, y = jmax25, fill = gm.trt)) +
@@ -596,7 +584,7 @@ jmax_mai_plot
 ##############################################################################
 jvmax_tri_results <- cld(emmeans(jmax.vcmax.tri, ~gm.trt*canopy, type = "response"), 
                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "AB", "A", "A"))
+  data.frame() %>% mutate(.group = c("B", "AB", "AB", "A"))
 
 jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = canopy, y = jmax.vcmax, fill = gm.trt)) +
@@ -670,6 +658,8 @@ jvmax_mai_plot
 ##############################################################################
 ## iWUE - Tri
 ##############################################################################
+Anova(iwue.tri)
+
 iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = gm.trt, y = iwue, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -678,7 +668,7 @@ iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 200, size = 4,
-           label = expression(bolditalic("Alliaria")*bold(" treatment: ")*bolditalic("p")*bold("<0.05"))) +
+           label = expression(italic("Alliaria")*italic(" treatment: ")*italic("p<0.1"))) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
   labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
@@ -726,6 +716,8 @@ iwue_mai_plot
 ##############################################################################
 ## Vcmax:gs - Tri
 ##############################################################################
+Anova(vcmax.gs.tri)
+
 vcmaxgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                            aes(x = gm.trt, y = vcmax.gs, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -793,11 +785,11 @@ dev.off()
 ##############################################################################
 ## Figure 2: Gas exchange
 ##############################################################################
-png("../drafts/figs/TT23_fig2_gasExchange.png", width = 8, height = 12,
+png("../drafts/figs/TT23_fig2_gasExchange.png", width = 12, height = 8,
     units = "in", res = 600)
-ggarrange(anet_tri_plot, anet_mai_plot, gsw_tri_plot, gsw_mai_plot, 
-          stomlim_tri_plot, stomlim_mai_plot, common.legend = TRUE, 
-          legend = "right", ncol = 2, nrow = 3, align = "hv",
+ggarrange(anet_tri_plot, gsw_tri_plot, stomlim_tri_plot, anet_mai_plot, 
+          gsw_mai_plot, stomlim_mai_plot, common.legend = TRUE, 
+          legend = "right", ncol = 3, nrow = 2, align = "hv",
           labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
 dev.off()
@@ -806,10 +798,10 @@ dev.off()
 ## Figure 3: Photosynthetic capacity
 ##############################################################################
 png("../drafts/figs/TT23_fig3_photoCapacity.png", 
-    width = 11, height = 12, units = "in", res = 600)
-ggarrange(vcmax_tri_plot, vcmax_mai_plot, jmax_tri_plot, jmax_mai_plot,
-          jvmax_tri_plot, jvmax_mai_plot, common.legend = TRUE, 
-          legend = "right", ncol = 2, nrow = 3, align = "hv",
+    width = 14, height = 8, units = "in", res = 600)
+ggarrange(vcmax_tri_plot, jmax_tri_plot, jvmax_tri_plot, vcmax_mai_plot,  
+          jmax_mai_plot, jvmax_mai_plot, common.legend = TRUE, 
+          legend = "right", ncol = 3, nrow = 2, align = "hv",
           labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
 dev.off()
@@ -818,11 +810,10 @@ dev.off()
 ## Figure 4: Resource use efficiency
 ##############################################################################
 png("../drafts/figs/TT23_fig4_nitrogenWater_tradeoffs.png", 
-    width = 7, height = 8, units = "in", res = 600)
-ggarrange(iwue_tri_plot, iwue_mai_plot, vcmaxgs_tri_plot, vcmaxgs_mai_plot,
+    width = 8, height = 8, units = "in", res = 600)
+ggarrange(iwue_tri_plot, vcmaxgs_tri_plot, iwue_mai_plot, vcmaxgs_mai_plot,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2, 
           align = "hv", labels = c("(a)", "(b)", "(c)", "(d)"), 
           font.label = list(size = 18))
 dev.off()
-
 
