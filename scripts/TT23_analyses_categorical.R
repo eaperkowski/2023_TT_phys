@@ -131,7 +131,10 @@ Anova(anet.tri)
 r.squaredGLMM(anet.tri)
 
 # Pairwise comparisons
-cld(emmeans(anet.tri, pairwise~gm.trt*canopy, type = "response"))
+emmeans(anet.tri, pairwise~canopy, type = "response")
+
+# Percent change
+(4.58 - 12.4) / 4.58 * 100
 
 ##############################################################################
 ## Anet - Mai
@@ -155,7 +158,12 @@ Anova(anet.mai)
 r.squaredGLMM(anet.mai)
 
 # Pairwise comparisons
+emmeans(anet.mai, pairwise~canopy)
 emmeans(anet.mai, pairwise~gm.trt)
+
+# Percent change 
+(4.12 - 9.28) / 4.12
+
 
 ##############################################################################
 ## gs - Tri
@@ -182,6 +190,9 @@ r.squaredGLMM(gsw.tri)
 emmeans(gsw.tri, pairwise~canopy)
 emmeans(gsw.tri, pairwise~gm.trt)
 
+# Canopy % change
+(0.113 - 0.139) / 0.113 * 100
+
 ##############################################################################
 ## gs - Mai
 ##############################################################################
@@ -207,6 +218,9 @@ r.squaredGLMM(gsw.mai)
 emmeans(gsw.mai, pairwise~canopy)
 emmeans(gsw.mai, pairwise~gm.trt)
 
+# Canopy % change
+(0.0594 - 0.1519) / 0.0594 * 100
+
 ##############################################################################
 ## stomatal limitation - Tri
 ##############################################################################
@@ -231,6 +245,12 @@ r.squaredGLMM(stomlim.tri)
 # Pairwise comparisons
 emmeans(stomlim.tri, pairwise~canopy, type = "response")
 emmeans(stomlim.tri, pairwise~gm.trt, type = "response")
+
+# % change canopy
+(0.177 - 0.492) / 0.177 * 100
+
+# % change gm.trt
+(0.287 - 0.303) / 0.287
 
 ##############################################################################
 ## stomatal limitation - Mai
@@ -277,8 +297,11 @@ Anova(vcmax.tri)
 r.squaredGLMM(vcmax.tri)
 
 # Pairwise comparisons
-emmeans(vcmax.tri, pairwise~gm.trt, type = "response")
+emmeans(vcmax.tri, pairwise~canopy, type = "response")
 cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy))
+
+# % change canopy
+(23.3 - 101.8) / 23.3 * 100
 
 ##############################################################################
 ## Vcmax - Mai
@@ -300,6 +323,13 @@ outlierTest(vcmax.mai)
 summary(vcmax.mai)
 Anova(vcmax.mai)
 r.squaredGLMM(vcmax.mai)
+
+# Pairwise comparisons
+emmeans(vcmax.mai, pairwise~canopy, type = "response")
+emmeans(vcmax.mai, pairwise~gm.trt, type = "response")
+
+# % change canopy
+(23.3 - 56.2) / 23.3 * 100
 
 ##############################################################################
 ## Jmax - Tri
@@ -323,7 +353,11 @@ Anova(jmax.tri)
 r.squaredGLMM(jmax.tri)
 
 # Pairwise comparisons
+emmeans(jmax.tri, pairwise~canopy, type = "response")
 cld(emmeans(jmax.tri, pairwise~gm.trt*canopy))
+
+# % change canopy
+(43.2 - 179.5) / 43.2 * 100
 
 ##############################################################################
 ## Jmax - Mai
@@ -346,6 +380,10 @@ r.squaredGLMM(jmax.mai)
 
 # Pairwise comparisons
 emmeans(jmax.mai, pairwise~canopy)
+emmeans(jmax.mai, pairwise~gm.trt, type = "response")
+
+# % change canopy
+(38.6 - 101.7) / 38.6 * 100
 
 ##############################################################################
 ## Jmax : Vcmax - Tri
@@ -367,6 +405,13 @@ outlierTest(jmax.vcmax.tri)
 summary(jmax.vcmax.tri)
 Anova(jmax.vcmax.tri)
 r.squaredGLMM(jmax.vcmax.tri)
+
+# Pairwise comparisons
+emmeans(jmax.vcmax.tri, pairwise~canopy, type = "response")
+
+# % change canopy
+(0.543 - 0.567) / 0.543 * 100
+
 
 ##############################################################################
 ## Jmax : Vcmax - Mai
@@ -393,13 +438,19 @@ r.squaredGLMM(jmax.vcmax.mai)
 emmeans(jmax.vcmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 
+# % change canopy
+(0.6 - 0.559) / 0.6 * 100 
+
+# % change gm.trt
+(0.592 - 0.567) / 0.592 * 100
+
 ##############################################################################
 ## iWUE - Tri
 ##############################################################################
-df$iwue[c(80, 86)] <- NA
+df$iwue[c(80, 86, 116)] <- NA
 
 iwue.tri <- lmer(
-  log(iwue) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  iwue ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(iwue.tri)
@@ -416,15 +467,16 @@ r.squaredGLMM(iwue.tri)
 
 # Pairwise comparisons
 emmeans(iwue.tri, pairwise~canopy)
-emmeans(iwue.tri, pairwise~gm.trt, type = "response")
+emmeans(iwue.tri, pairwise~gm.trt)
+
+# % change canopy
+(44.6 - 91.3) / 44.6 * 100
 
 ##############################################################################
 ## iWUE - Mai
 ##############################################################################
-df$iwue[c(104)] <- NA
-
 iwue.mai <- lmer(
-  log(iwue) ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
+  iwue ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(iwue.mai)
@@ -441,6 +493,13 @@ r.squaredGLMM(iwue.mai)
 
 # Pairwise comparisons
 emmeans(iwue.mai, pairwise~canopy)
+emmeans(iwue.mai, pairwise~gm.trt)
+
+# % change canopy
+(78.9 - 62.6) / 78.9 * 100 
+
+# % change gm.trt
+(82.6 - 58.9) / 82.6 * 100
 
 ##############################################################################
 ## Vcmax25:gs - Tri
@@ -464,6 +523,9 @@ r.squaredGLMM(vcmax.gs.tri)
 # Pairwise comparisons
 emmeans(vcmax.gs.tri, pairwise~canopy)
 
+# % change canopy
+(5.4 - 6.61) / 5.4 * 100
+
 ##############################################################################
 ## Vcmax25:gs - Mai
 ##############################################################################
@@ -484,7 +546,16 @@ Anova(vcmax.gs.mai)
 r.squaredGLMM(vcmax.gs.mai)
 
 # Pairwise comparisons
-cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy, type = "response"))
+emmeans(vcmax.gs.mai, pairwise~canopy, type = "response")
+emmeans(vcmax.gs.mai, pairwise~gm.trt, type = "response")
+cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy))
+
+# % change canopy
+(463 -  370) / 463 * 100
+
+# % change gm.trt
+(519 - 330) / 519 * 100
+
 
 ##############################################################################
 ## Write Table 1: Soil nutrients
