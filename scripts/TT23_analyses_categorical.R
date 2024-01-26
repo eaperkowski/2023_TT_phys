@@ -16,8 +16,8 @@ head(df)
 
 ## Read and subset soil dataset
 df.soil <- df %>%
-  group_by(plot, subplot, composite, gm.trt, canopy, days_deployed) %>%
-  summarize_at(.vars = vars(phosphate_ppm:n_plantAvail_day),
+  group_by(plot, composite, gm.trt, canopy, days_deployed) %>%
+  summarize_at(.vars = vars(phosphate_ug:inorg_n_ug_day),
                .funs = mean) %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
@@ -25,7 +25,7 @@ df.soil <- df %>%
 ##############################################################################
 ## Nitrate
 ##############################################################################
-nitrate <- lmer(nitrate_ppm_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+nitrate <- lmer(nitrate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(nitrate)
@@ -46,8 +46,9 @@ emmeans(nitrate, pairwise~canopy)
 ##############################################################################
 ## Ammonium
 ##############################################################################
-ammonium <- lmer(
-  ammonium_ppm_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+df.soil$ammonium_ug_day[c(34, 40, 56)] <- NA
+
+ammonium <- lmer(ammonium_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(ammonium)
@@ -69,7 +70,7 @@ emmeans(ammonium, pairwise~canopy)
 ## Phosphate
 ##############################################################################
 phosphate <- lmer(
-  phosphate_ppm_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  phosphate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(phosphate)
@@ -91,7 +92,7 @@ emmeans(phosphate, pairwise~gm.trt)
 ## N availability (nitrate + ammonium)
 ##############################################################################
 plant_availableN <- lmer(
-  n_plantAvail_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  inorg_n_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(plant_availableN)

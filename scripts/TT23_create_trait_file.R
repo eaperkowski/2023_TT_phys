@@ -9,28 +9,44 @@ library(tidyverse)
 phys <- read.csv("../data/raw_data/TT23_gasExchange.csv")
 multispeq <- read.csv("../data/raw_data/TT23_multispeq_data.csv")
 
-# Read resin strip data file, then subset by composite and standardize
-# values by number of days deployed. Also calculate plant-available N
-# concentration as sum of nitrate and ammonium concentration
-nutrients <- read.csv("../data/raw_data/TT23_resin_strip_data.csv") %>%
-  group_by(round, plot, composite, days_deployed) %>%
-  summarize(phosphate_ppm = mean(phosphate_ppm, na.rm = TRUE),
-            nitrate_ppm = mean(nitrate_ppm, na.rm = TRUE),
-            ammonium_ppm = mean(ammonium_ppm, na.rm = TRUE)) %>%
-  mutate(n_plantAvail = nitrate_ppm + ammonium_ppm,
-         phosphate_ppm_day = phosphate_ppm / days_deployed,
-         nitrate_ppm_day = nitrate_ppm / days_deployed,
-         ammonium_ppm_day = ammonium_ppm / days_deployed,
-         n_plantAvail_day = n_plantAvail / days_deployed,
-         canopy = ifelse(round == 1, 
-                         "pre_closure",
-                         ifelse(round == 2,
-                                "post_closure",
-                                NA))) %>%
-  ungroup(round) %>%
-  dplyr::select(plot, composite, canopy, 
-                days_deployed:n_plantAvail_day) %>%
-  filter(plot == 3 | plot == 5 | plot == 7)
+#####################################################################
+# Compile resin strip data into single object, then standardize
+# for duration in the field
+#####################################################################
+phos_nit_corrected <- read.csv("../data/raw_data/TT23_resin_strip_corrected_po4_no3.csv")
+ammonium_corrected <- read.csv("../data/raw_data/TT23_resin_strip_corrected_ammonium.csv")
+
+nutrients <- phos_nit_corrected %>%
+  full_join(ammonium_corrected, by = c("plot", "composite", "canopy")) %>%
+  dplyr::select(-subplot.y, -X, 
+                plot, subplot = subplot.x, composite:days_deployed,
+                phosphate_ug = phosphate_ppm, nitrate_ug = nitrate_ppm,
+                ammonium_ug = ammonium_ppm) %>%
+  mutate(days_deployed = ifelse(canopy == "post_closure" & plot == 3,
+                                29, 
+                                ifelse(canopy == "post_closure" & plot == 5,
+                                       28, 
+                                       ifelse(canopy == "post_closure" & plot == 7,
+                                              29,
+                                              ifelse(canopy == "pre_closure" & plot == 3,
+                                                     41,
+                                                     ifelse(canopy == "pre_closure" & plot == 5,
+                                                            42,
+                                                            ifelse(canopy == "pre_closure" & plot == 7,
+                                                                   35, NA))))))) %>%
+  group_by(canopy, plot, composite, days_deployed) %>%
+  summarize(phosphate_ug = mean(phosphate_ug, na.rm = TRUE),
+            nitrate_ug = mean(nitrate_ug, na.rm = TRUE),
+            ammonium_ug = mean(ammonium_ug, na.rm = TRUE)) %>%
+  mutate(phosphate_ug = na_if(phosphate_ug, NaN),
+         nitrate_ug = na_if(nitrate_ug, NaN),
+         ammonium_ug = na_if(ammonium_ug, NaN)) %>%
+  mutate(inorg_n_ug = ifelse(!is.na(nitrate_ug) & !is.na(ammonium_ug),
+                             nitrate_ug + ammonium_ug, NA),
+         phosphate_ug_day = phosphate_ug / days_deployed,
+         nitrate_ug_day = nitrate_ug / days_deployed,
+         ammonium_ug_day = ammonium_ug / days_deployed,
+         inorg_n_ug_day = inorg_n_ug / days_deployed)
 
 #####################################################################
 # Join multispeq and physiology data set
@@ -38,8 +54,8 @@ nutrients <- read.csv("../data/raw_data/TT23_resin_strip_data.csv") %>%
 phys.total <- phys %>%
   full_join(multispeq) %>%
   full_join(nutrients, by = c("plot", "composite", "canopy")) %>%
-  filter(!is.na(id))
-
+  filter(!is.na(id) & !is.na(anet)) %>%
+  mutate(stom.lim = ifelse(stom.lim < 0, NA, stom.lim))
 
 #####################################################################
 # Write compiled data file
