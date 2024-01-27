@@ -608,8 +608,8 @@ soil.phosphate <- data.frame(Anova(phosphate)) %>%
 table1 <- soil.nitrogen %>% full_join(soil.nitrate) %>% 
   full_join(soil.ammonium) %>% full_join(soil.phosphate)
 
-#write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
-#          row.names = FALSE)
+write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
+          row.names = FALSE)
 
 ##############################################################################
 ## Write Table 2: Gas exchange
