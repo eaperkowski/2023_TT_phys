@@ -64,7 +64,7 @@ Anova(ammonium)
 r.squaredGLMM(ammonium)
 
 # Pairwise comparisons
-emmeans(ammonium, pairwise~canopy)
+cld(emmeans(ammonium, pairwise~canopy*gm.trt))
 
 ##############################################################################
 ## Phosphate
