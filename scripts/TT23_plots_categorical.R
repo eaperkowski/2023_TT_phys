@@ -784,11 +784,7 @@ dev.off()
 ##############################################################################
 png("../drafts/figs/TT23_fig2_gasExchange.png", width = 12, height = 8,
     units = "in", res = 600)
-ggarrange(anet_tri_plot, gsw_tri_plot, stomlim_tri_plot, anet_mai_plot, 
-          gsw_mai_plot, stomlim_mai_plot, common.legend = TRUE, 
-          legend = "right", ncol = 3, nrow = 2, align = "hv",
-          labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
-          font.label = list(size = 18))
+o
 dev.off()
 
 ##############################################################################
