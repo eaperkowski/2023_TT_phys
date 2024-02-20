@@ -872,9 +872,60 @@ write.csv(table3, "../drafts/tables/TT23_table3_photoCapacity.csv",
           row.names = FALSE)
 
 ##############################################################################
+## Write Table 4: SPAD and phi psII
+##############################################################################
+spad.tri <- data.frame(Anova(spad.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_spad.tri = Chisq,
+         p_spad.tri = Pr..Chisq.,
+         across(chisq_spad.tri:p_spad.tri, round, digits = 3),
+         chisq_spad.tri = ifelse(chisq_spad.tri < 0.001 & chisq_spad.tri >= 0, 
+                                 "<0.001", chisq_spad.tri),
+         p_spad.tri = ifelse(p_spad.tri <0.001 & p_spad.tri >= 0, 
+                             "<0.001", p_spad.tri)) %>%
+  dplyr::select(treatment, Df, chisq_spad.tri, p_spad.tri)
+
+spad.mai <- data.frame(Anova(spad.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_spad.mai = Chisq,
+         p_spad.mai = Pr..Chisq.,
+         across(chisq_spad.mai:p_spad.mai, round, digits = 3),
+         chisq_spad.mai = ifelse(chisq_spad.mai < 0.001 & chisq_spad.mai >= 0, 
+                                 "<0.001", chisq_spad.mai),
+         p_spad.mai = ifelse(p_spad.mai <0.001 & p_spad.mai >= 0, 
+                             "<0.001", p_spad.mai)) %>%
+  dplyr::select(treatment, chisq_spad.mai, p_spad.mai)
+
+phi2.tri <- data.frame(Anova(phips2.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_phi2.tri = Chisq,
+         p_phi2.tri = Pr..Chisq.,
+         across(chisq_phi2.tri:p_phi2.tri, round, digits = 3),
+         chisq_phi2.tri = ifelse(chisq_phi2.tri < 0.001 & chisq_phi2.tri >= 0, 
+                                 "<0.001", chisq_phi2.tri),
+         p_phi2.tri = ifelse(p_phi2.tri < 0.001 & p_phi2.tri >= 0, 
+                             "<0.001", p_phi2.tri)) %>%
+  dplyr::select(treatment, Df, chisq_phi2.tri, p_phi2.tri)
+
+phi2.mai <- data.frame(Anova(phips2.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_phi2.mai = Chisq,
+         p_phi2.mai = Pr..Chisq.,
+         across(chisq_phi2.mai:p_phi2.mai, round, digits = 3),
+         chisq_phi2.mai = ifelse(chisq_phi2.mai < 0.001 & chisq_phi2.mai >= 0, 
+                                 "<0.001", chisq_phi2.mai),
+         p_phi2.mai = ifelse(p_phi2.mai < 0.001 & p_phi2.mai >= 0, 
+                             "<0.001", p_phi2.mai)) %>%
+  dplyr::select(treatment, chisq_phi2.mai, p_phi2.mai)
+
+table4 <- spad.tri %>% full_join(phi2.tri) %>% full_join(spad.mai) %>%
+  full_join(phi2.mai)
+write.csv(table4, "../drafts/tables/TT23_table4_chlor_fluor.csv",
+          row.names = FALSE)
+
+##############################################################################
 ## Write Table 5: iWUE and Vcmax:gsw
 ##############################################################################
-
 iwue.tri <- data.frame(Anova(iwue.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_iwue.tri = Chisq,
@@ -920,9 +971,9 @@ vcmax.gs.mai <- data.frame(Anova(vcmax.gs.mai)) %>%
                              "<0.001", p_vcmax.gs.mai)) %>%
   dplyr::select(treatment, chisq_vcmax.gs.mai, p_vcmax.gs.mai)
 
-table4 <- iwue.tri %>% full_join(vcmax.gs.tri) %>% full_join(iwue.mai) %>%
+table5 <- iwue.tri %>% full_join(vcmax.gs.tri) %>% full_join(iwue.mai) %>%
    full_join(vcmax.gs.mai)
-write.csv(table4, "../drafts/tables/TT23_table4_iWUE_vcmaxgs.csv",
+write.csv(table5, "../drafts/tables/TT23_table5_iWUE_vcmaxgs.csv",
           row.names = FALSE)
 
 

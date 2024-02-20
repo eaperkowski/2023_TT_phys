@@ -1,0 +1,4 @@
+"treatment","Df","chisq_iwue.tri","p_iwue.tri","chisq_vcmax.gs.tri","p_vcmax.gs.tri","chisq_iwue.mai","p_iwue.mai","chisq_vcmax.gs.mai","p_vcmax.gs.mai"
+"gm.trt",1,2.01,"0.156",0.143,0.705,33.105,"<0.001",18.195,"<0.001"
+"canopy",1,360.228,"<0.001",252.597,0,20.603,"<0.001",8.628,"0.003"
+"gm.trt:canopy",1,0.031,"0.861",0.375,0.54,1.81,"0.179",6.042,"0.014"
