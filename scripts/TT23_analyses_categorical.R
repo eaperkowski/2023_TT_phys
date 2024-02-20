@@ -580,6 +580,11 @@ r.squaredGLMM(spad.tri)
 # Pairwise comparisons
 emmeans(spad.tri, pairwise~canopy)
 
+# % change canopy
+(44.7 - 35.5) / 44.7 * 100
+
+
+
 ##############################################################################
 ## SPAD - Mai
 ##############################################################################
@@ -603,6 +608,10 @@ r.squaredGLMM(spad.mai)
 
 # Pairwise comparisons
 emmeans(spad.mai, pairwise~canopy)
+
+# % change canopy
+(39.9 - 26.5) / 39.9 * 100
+
 
 ##############################################################################
 ## phi2 - Tri
@@ -628,6 +637,10 @@ r.squaredGLMM(phips2.tri)
 # Pairwise comparisons
 emmeans(phips2.tri, pairwise~canopy)
 
+# % change canopy
+(0.435 - 0.265) / 0.435 * 100
+
+
 ##############################################################################
 ## phi2 - Mai
 ##############################################################################
@@ -649,6 +662,9 @@ r.squaredGLMM(phips2.mai)
 
 # Pairwise comparisons
 emmeans(phips2.mai, pairwise~canopy)
+
+# % change canopy
+(0.410 - 0.267) / 0.410 * 100
 
 ##############################################################################
 ## Write Table 1: Soil nutrients
@@ -856,7 +872,7 @@ write.csv(table3, "../drafts/tables/TT23_table3_photoCapacity.csv",
           row.names = FALSE)
 
 ##############################################################################
-## Write Table 4: iWUE and Vcmax:gsw
+## Write Table 5: iWUE and Vcmax:gsw
 ##############################################################################
 
 iwue.tri <- data.frame(Anova(iwue.tri)) %>%
