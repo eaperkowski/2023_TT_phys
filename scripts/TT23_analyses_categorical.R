@@ -559,6 +559,98 @@ cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy))
 
 
 ##############################################################################
+## SPAD - Tri
+##############################################################################
+spad.tri <- lmer(
+  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(spad.tri)
+qqnorm(residuals(spad.tri))
+qqline(residuals(spad.tri))
+densityPlot(residuals(spad.tri))
+shapiro.test(residuals(spad.tri))
+outlierTest(spad.tri)
+
+# Model output
+summary(spad.tri)
+Anova(spad.tri)
+r.squaredGLMM(spad.tri)
+
+# Pairwise comparisons
+emmeans(spad.tri, pairwise~canopy)
+
+##############################################################################
+## SPAD - Mai
+##############################################################################
+df$SPAD[c(122)] <- NA
+
+spad.mai <- lmer(
+  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(spad.mai)
+qqnorm(residuals(spad.mai))
+qqline(residuals(spad.mai))
+densityPlot(residuals(spad.mai))
+shapiro.test(residuals(spad.mai))
+outlierTest(spad.mai)
+
+# Model output
+summary(spad.mai)
+Anova(spad.mai)
+r.squaredGLMM(spad.mai)
+
+# Pairwise comparisons
+emmeans(spad.mai, pairwise~canopy)
+
+##############################################################################
+## phi2 - Tri
+##############################################################################
+df$Phi2[92] <- NA
+
+phips2.tri <- lmer(
+  Phi2 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(phips2.tri)
+qqnorm(residuals(phips2.tri))
+qqline(residuals(phips2.tri))
+densityPlot(residuals(phips2.tri))
+shapiro.test(residuals(phips2.tri))
+outlierTest(phips2.tri)
+
+# Model output
+summary(phips2.tri)
+Anova(phips2.tri)
+r.squaredGLMM(phips2.tri)
+
+# Pairwise comparisons
+emmeans(phips2.tri, pairwise~canopy)
+
+##############################################################################
+## phi2 - Mai
+##############################################################################
+phips2.mai <- lmer(
+  Phi2 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(phips2.mai)
+qqnorm(residuals(phips2.mai))
+qqline(residuals(phips2.mai))
+densityPlot(residuals(phips2.mai))
+shapiro.test(residuals(phips2.mai))
+outlierTest(phips2.mai)
+
+# Model output
+summary(phips2.mai)
+Anova(phips2.mai)
+r.squaredGLMM(phips2.mai)
+
+# Pairwise comparisons
+emmeans(phips2.mai, pairwise~canopy)
+
+##############################################################################
 ## Write Table 1: Soil nutrients
 ##############################################################################
 soil.nitrogen <- data.frame(Anova(plant_availableN)) %>%
