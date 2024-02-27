@@ -653,6 +653,114 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
 jvmax_mai_plot
 
 ##############################################################################
+## SPAD - Tri
+##############################################################################
+spad_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
+                       aes(x = canopy, y = SPAD, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitter(width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  annotate(geom = "text", x = 1.5, y = 60, size = 4,
+           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
+  scale_x_discrete(labels = c("open", "closed")) +
+  scale_y_continuous(limits = c(15, 60), breaks = seq(15, 60, 15)) +
+  labs(x = "Tree canopy status",
+       y = "SPAD (unitless)") +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+spad_tri_plot
+
+##############################################################################
+## SPAD - Tri
+##############################################################################
+spad_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
+                        aes(x = canopy, y = SPAD, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitter(width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  annotate(geom = "text", x = 1.5, y = 60, size = 4,
+           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
+  scale_x_discrete(labels = c("open", "closed")) +
+  scale_y_continuous(limits = c(15, 60), breaks = seq(15, 60, 15)) +
+  labs(x = "Tree canopy status",
+       y = "SPAD (unitless)") +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+spad_mai_plot
+
+##############################################################################
+## Phi2 - Tri
+##############################################################################
+phi2_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
+                        aes(x = canopy, y = Phi2, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitter(width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  annotate(geom = "text", x = 1.5, y = 0.6, size = 4,
+           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
+  scale_x_discrete(labels = c("open", "closed")) +
+  scale_y_continuous(limits = c(0, 0.6), breaks = seq(0, 0.6, 0.2)) +
+  labs(x = "Tree canopy status",
+       y = expression(bold(Phi["PSII"]))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+phi2_tri_plot
+
+##############################################################################
+## Phi2 - Mai
+##############################################################################
+phi2_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
+                        aes(x = canopy, y = Phi2, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitter(width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  annotate(geom = "text", x = 1.5, y = 0.6, size = 4,
+           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
+  scale_x_discrete(labels = c("open", "closed")) +
+  scale_y_continuous(limits = c(0, 0.6), breaks = seq(0, 0.6, 0.2)) +
+  labs(x = "Tree canopy status",
+       y = expression(bold(Phi["PSII"]))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+phi2_mai_plot
+
+##############################################################################
 ## iWUE - Tri
 ##############################################################################
 Anova(iwue.tri)
@@ -784,7 +892,11 @@ dev.off()
 ##############################################################################
 png("../drafts/figs/TT23_fig2_gasExchange.png", width = 12, height = 8,
     units = "in", res = 600)
-o
+ggarrange(anet_tri_plot, gsw_tri_plot, stomlim_tri_plot, anet_mai_plot,  
+          gsw_mai_plot, stomlim_mai_plot, common.legend = TRUE, 
+          legend = "right", ncol = 3, nrow = 2, align = "hv",
+          labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
+          font.label = list(size = 18))
 dev.off()
 
 ##############################################################################
@@ -800,9 +912,21 @@ ggarrange(vcmax_tri_plot, jmax_tri_plot, jvmax_tri_plot, vcmax_mai_plot,
 dev.off()
 
 ##############################################################################
-## Figure 4: Resource use efficiency
+## Figure 4: Chlorophyll fluorescence
 ##############################################################################
-png("../drafts/figs/TT23_fig4_nitrogenWater_tradeoffs.png", 
+png("../drafts/figs/TT23_fig4_chlor_fluor.png", 
+    width = 10, height = 8, units = "in", res = 600)
+ggarrange(spad_tri_plot, phi2_tri_plot, spad_mai_plot, phi2_mai_plot,
+          common.legend = TRUE, legend = "right", ncol = 2, nrow = 2, 
+          align = "hv", font.label = list(size = 18),
+          labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"))
+dev.off()
+
+
+##############################################################################
+## Figure 5: Resource use efficiency
+##############################################################################
+png("../drafts/figs/TT23_fig5_nitrogenWater_tradeoffs.png", 
     width = 8, height = 8, units = "in", res = 600)
 ggarrange(iwue_tri_plot, vcmaxgs_tri_plot, iwue_mai_plot, vcmaxgs_mai_plot,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2, 
