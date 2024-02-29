@@ -915,7 +915,7 @@ dev.off()
 ## Figure 4: Chlorophyll fluorescence
 ##############################################################################
 png("../drafts/figs/TT23_fig4_chlor_fluor.png", 
-    width = 10, height = 8, units = "in", res = 600)
+    width = 8, height = 8, units = "in", res = 600)
 ggarrange(spad_tri_plot, phi2_tri_plot, spad_mai_plot, phi2_mai_plot,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2, 
           align = "hv", font.label = list(size = 18),
