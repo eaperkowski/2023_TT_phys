@@ -121,12 +121,12 @@ n_plantavailable_plot <- ggplot(data = df.soil,
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) + 
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("Weeded", "Ambient")) +
-  scale_x_discrete(labels = c("Open", "Closed")) +
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Tree canopy status",
        y = "Soil inorganic N (ppm)",
-       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
@@ -158,9 +158,8 @@ phosphate_plot <- ggplot(data = df.soil,
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c(expression(italic("Alliaria")*" weeded"), 
-                               expression(italic("Alliaria")*" present"))) +
-  scale_x_discrete(labels = c("Open", "Closed")) +
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
   labs(x = "Tree canopy status",
        y = "Soil P (ppm)",
@@ -194,13 +193,12 @@ no3_plot <- ggplot(data = df.soil,
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c(expression(italic("Alliaria")*" weeded"), 
-                               expression(italic("Alliaria")*" present"))) +
-  scale_x_discrete(labels = c("Open", "Closed")) +
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Tree canopy status",
        y = expression(bold("Soil NO"["3"]*"-N (ppm)")),
-       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
@@ -229,13 +227,12 @@ nh4_plot <- ggplot(data = df.soil,
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c(expression(italic("Alliaria")*" weeded"), 
-                               expression(italic("Alliaria")*" present"))) +
-  scale_x_discrete(labels = c("Open", "Closed")) +
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 1.2), breaks = seq(0, 1.2, 0.3)) +
   labs(x = "Tree canopy status",
        y = expression(bold("Soil NH"["4"]*"-N (ppm)")),
-       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
@@ -451,7 +448,7 @@ vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree canopy status",
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -461,8 +458,7 @@ vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 vcmax_tri_plot
 
 ##############################################################################
@@ -491,7 +487,7 @@ vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree anopy status",
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -501,8 +497,7 @@ vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 vcmax_mai_plot
 
 ##############################################################################
@@ -529,7 +524,7 @@ jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree canopy status",
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -539,8 +534,7 @@ jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 jmax_tri_plot
 
 ##############################################################################
@@ -569,7 +563,7 @@ jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree canopy status",
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -579,8 +573,7 @@ jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 jmax_mai_plot
 
 ##############################################################################
@@ -608,7 +601,7 @@ jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                                "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree canopy status",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -618,8 +611,7 @@ jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 jvmax_tri_plot
 
 ##############################################################################
@@ -643,11 +635,10 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", 
-                               "ambient")) +
+                    labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
-  labs(x = "Canopy status",
+  labs(x = "Tree canopy status",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -657,8 +648,7 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
         legend.text = element_text(hjust = 0),
         strip.background = element_blank(),
         strip.text = element_text(face = "italic", size = 18),
-        panel.grid.minor.y = element_blank()) +
-  guides(fill = guide_legend(ncol = 2))
+        panel.grid.minor.y = element_blank())
 jvmax_mai_plot
 
 ##############################################################################
@@ -723,7 +713,7 @@ phi2_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
-             alpha = 0.5, size = 2.5) +
+             alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 0.6, size = 4,
            label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
@@ -790,10 +780,10 @@ iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 200, size = 4,
-           label = expression(italic("Alliaria")*italic(" treatment: ")*italic("p<0.1"))) +
+           label = expression(italic("A. petiolata")*italic(" treatment: ")*italic("p<0.1"))) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold("Intrinsic WUE ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -819,10 +809,10 @@ iwue_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 200, size = 4,
-           label = expression(bolditalic("Alliaria")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
+           label = expression(bolditalic("A. petiolata")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold("Intrinsic WUE ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -850,11 +840,11 @@ spadgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                                              dodge.width = 0.75),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 1000, size = 4,
-           label = expression(italic("Alliaria")*" treatment: "*italic("p")*">0.05")) +
+  #annotate(geom = "text", x = 1.5, y = 1000, size = 4,
+  #         label = expression(italic("Alliaria")*" treatment: "*italic("p")*">0.05")) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
-  scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 1000, 500)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  scale_y_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 500)) +
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -892,7 +882,7 @@ spadgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 1000)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold("SPAD : g"["sw"]*" (mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -918,10 +908,10 @@ vcmaxgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 2000, size = 4,
-           label = expression(italic("Alliaria")*" treatment: "*italic("p")*">0.05")) +
+           label = expression(italic("A. petiolata")*" treatment: "*italic("p")*">0.05")) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, 500)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -947,10 +937,10 @@ vcmaxgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 2000, size = 4,
-           label = expression(bolditalic("Alliaria")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
+           label = expression(bolditalic("A. petiolata")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, 500)) +
-  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
        y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -966,10 +956,10 @@ vcmaxgs_mai_plot
 ##############################################################################
 ## Figure 1: Soil nutrients 
 ##############################################################################
-png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 10, height = 8,
+png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 8, height = 8,
     units = "in", res = 600)
 ggarrange(n_plantavailable_plot, phosphate_plot, no3_plot, nh4_plot,
-          common.legend = TRUE, legend = "right", ncol = 2, nrow = 2,
+          common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2,
           align = "hv", labels = c("(a)", "(b)", "(c)", "(d)"), 
           font.label = list(size = 18))
 dev.off()
@@ -990,10 +980,10 @@ dev.off()
 ## Figure 3: Photosynthetic capacity
 ##############################################################################
 png("../drafts/figs/TT23_fig3_photoCapacity.png", 
-    width = 14, height = 8, units = "in", res = 600)
+    width = 12, height = 8, units = "in", res = 600)
 ggarrange(vcmax_tri_plot, jmax_tri_plot, jvmax_tri_plot, vcmax_mai_plot,  
           jmax_mai_plot, jvmax_mai_plot, common.legend = TRUE, 
-          legend = "right", ncol = 3, nrow = 2, align = "hv",
+          legend = "bottom", ncol = 3, nrow = 2, align = "hv",
           labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
 dev.off()
