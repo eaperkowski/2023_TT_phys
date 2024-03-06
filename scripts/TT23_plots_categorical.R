@@ -8,7 +8,7 @@ library(lme4)
 library(car)
 library(emmeans)
 library(multcomp)
-library(MuMIn)
+library(gghalves)
 
 ## Read compiled data file
 df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
@@ -20,19 +20,24 @@ df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
   mutate(gm.canopy = factor(gm.canopy, levels = c("weeded_pre_closure",
                                                   "invaded_pre_closure",
                                                   "weeded_post_closure",
-                                                  "invaded_post_closure")))
+                                                  "invaded_post_closure")),
+         spad.gs = SPAD / gsw)
 head(df)
+
+# helper fxn to change "NaN" to "NA"
+NaN_to_NA <- function(x) ifelse(is.nan(x), NA, x)
 
 ## Read and subset soil dataset
 df.soil <- df %>%
-  group_by(plot, composite, gm.trt, canopy, days_deployed) %>%
-  summarize_at(.vars = vars(phosphate_ug:inorg_n_ug_day),
-               .funs = mean) %>%
+  group_by(plot, composite, gm.trt, canopy) %>%
+  summarize_at(.vars = vars(phosphate_ppm:inorg_n_ppm),
+               .funs = mean, na.rm = TRUE) %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
-         canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
+         canopy = factor(canopy, levels = c("pre_closure", "post_closure"))) %>%
+  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA))
 
 ## Remove outliers
-df.soil$ammonium_ug_day[c(34, 40, 56)] <- NA
+df.soil$ammonium_ppm[c(40, 56)] <- NA
 df$anet[c(35, 71, 80, 86, 116, 120)] <- NA
 df$gsw[c(86, 120)] <- NA
 df$stom.lim[c(228, 229)] <- NA
@@ -40,16 +45,17 @@ df$vcmax25[c(183, 231)] <- NA
 df$jmax25[183] <- NA
 df$jmax.vcmax[c(94, 184, 224, 225, 231)] <- NA
 df$iwue[c(80, 86, 104)] <- NA
+df$spad.gs[c(49, 132)] <- NA
 
 ## Create models for soil data
-nitrate <- lmer(
-  nitrate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
-ammonium <- lmer(
-  ammonium_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
-phosphate <- lmer(
-  phosphate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
-plant_availableN <- lmer(
-  inorg_n_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+nitrate <- lmer(nitrate_ppm ~ gm.trt * canopy + (1 | plot), 
+                data = df.soil)
+ammonium <- lmer(ammonium_ppm ~ gm.trt * canopy + (1 | plot), 
+                 data = df.soil)
+phosphate <- lmer(phosphate_ppm ~ gm.trt * canopy + (1 | plot), 
+                  data = df.soil)
+plant_availableN <- lmer(inorg_n_ppm ~ gm.trt * canopy + (1 | plot), 
+                         data = df.soil)
 
 ## Create models for photosynthesis data
 anet.tri <- lmer(anet ~ gm.trt * canopy + (1 | plot),
@@ -84,6 +90,10 @@ vcmax.gs.tri <- lmer(log(vcmax.gs) ~ gm.trt * canopy + (1 | plot),
                      data = subset(df, spp == "Tri"))
 vcmax.gs.mai <- lmer(log(vcmax.gs) ~ gm.trt * canopy + (1 | plot),
                      data = subset(df, spp == "Mai"))
+spad.gs.tri <- lmer(log(spad.gs) ~ gm.trt * canopy + (1 | plot),
+                    data = subset(df, spp == "Tri"))
+spad.gs.mai <- lmer(log(spad.gs) ~ gm.trt * canopy + (1 | plot),
+                    data = subset(df, spp == "Mai"))
 
 ## Add code for facet labels
 facet.labs <- c("Trillium spp.", "M. racemosum")
@@ -97,7 +107,7 @@ n_results <- cld(emmeans(plant_availableN, ~canopy*gm.trt), Letters = LETTERS) %
   mutate(.group = c("B", "B", "A", "A"))
 
 n_plantavailable_plot <- ggplot(data = df.soil,
-                                aes(x = canopy, y = inorg_n_ug_day, 
+                                aes(x = canopy, y = inorg_n_ppm, 
                                     fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
@@ -107,16 +117,16 @@ n_plantavailable_plot <- ggplot(data = df.soil,
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = n_results, 
-            aes(x = canopy, y = 100, group = gm.trt, label = .group),
+            aes(x = canopy, y = 40, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) + 
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("Weeded", "Ambient")) +
   scale_x_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25)) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Tree canopy status",
-       y = expression(bold("Soil inorganic N (")*bold(mu)*bold("g day"^"-1"*")")),
-       fill = expression(bolditalic("Alliaria")*bold("presence"))) +
+       y = "Soil inorganic N (ppm)",
+       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
@@ -134,7 +144,7 @@ phosphate_results <- cld(emmeans(phosphate, pairwise~canopy*gm.trt),
   mutate(.group = trimws(.group, which = "both"))
 
 phosphate_plot <- ggplot(data = df.soil,
-                         aes(x = canopy, y = phosphate_ug_day, 
+                         aes(x = canopy, y = phosphate_ppm, 
                              fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
@@ -144,16 +154,16 @@ phosphate_plot <- ggplot(data = df.soil,
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = phosphate_results, 
-            aes(x = canopy, y = 6, group = gm.trt, label = .group),
+            aes(x = canopy, y = 2, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c(expression(italic("Alliaria")*" weeded"), 
                                expression(italic("Alliaria")*" present"))) +
   scale_x_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 6), breaks = seq(0, 6, 1.5)) +
+  scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
   labs(x = "Tree canopy status",
-       y = expression(bold("Soil P (")*bold(mu)*bold("g day"^"-1"*")")),
+       y = "Soil P (ppm)",
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
@@ -170,7 +180,7 @@ no3_results <- cld(emmeans(nitrate, ~canopy*gm.trt), Letters = LETTERS) %>%
   mutate(.group = c("B", "B", "A", "A"))
 
 no3_plot <- ggplot(data = df.soil,
-                                aes(x = canopy, y = nitrate_ug_day, 
+                                aes(x = canopy, y = nitrate_ppm, 
                                     fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
@@ -180,16 +190,16 @@ no3_plot <- ggplot(data = df.soil,
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = no3_results, 
-            aes(x = canopy, y = 100, group = gm.trt, label = .group),
+            aes(x = canopy, y = 40, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c(expression(italic("Alliaria")*" weeded"), 
                                expression(italic("Alliaria")*" present"))) +
   scale_x_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25)) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Tree canopy status",
-       y = expression(bold("Soil NO"["3"]*"-N ("*mu*"g day"^"-1"*")")),
+       y = expression(bold("Soil NO"["3"]*"-N (ppm)")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
@@ -202,11 +212,10 @@ no3_plot
 ## Soil ammonium
 ##############################################################################
 # Prep file for figure
-nh4_results <- cld(emmeans(ammonium, ~canopy*gm.trt), Letters = LETTERS) %>%
-  mutate(.group = c("B", "B", "A", "A"))
+nh4_results <- cld(emmeans(ammonium, ~canopy*gm.trt), Letters = LETTERS)
 
 nh4_plot <- ggplot(data = df.soil,
-                   aes(x = canopy, y = ammonium_ug_day, 
+                   aes(x = canopy, y = ammonium_ppm, 
                        fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
@@ -216,16 +225,16 @@ nh4_plot <- ggplot(data = df.soil,
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = nh4_results, 
-            aes(x = canopy, y = 4, group = gm.trt, label = .group),
+            aes(x = canopy, y = 1.2, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c(expression(italic("Alliaria")*" weeded"), 
                                expression(italic("Alliaria")*" present"))) +
   scale_x_discrete(labels = c("Open", "Closed")) +
-  scale_y_continuous(limits = c(0, 4), breaks = seq(0, 4, 1)) +
+  scale_y_continuous(limits = c(0, 1.2), breaks = seq(0, 1.2, 0.3)) +
   labs(x = "Tree canopy status",
-       y = expression(bold("Soil NH"["4"]*"-N ("*mu*"g day"^"-1"*")")),
+       y = expression(bold("Soil NH"["4"]*"-N (ppm)")),
        fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
@@ -714,7 +723,7 @@ phi2_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
+             alpha = 0.5, size = 2.5) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   annotate(geom = "text", x = 1.5, y = 0.6, size = 4,
            label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
@@ -732,6 +741,14 @@ phi2_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
         panel.grid.minor.y = element_blank()) +
   guides(fill = "none")
 phi2_tri_plot
+
+# Explore weird delineation between high and low Phi2
+ggplot(data = subset(df, spp == "Tri" & canopy == "pre_closure"),
+       aes(x = gm.trt, y = Phi2, fill = gm.trt)) +
+  geom_boxplot() +
+  geom_point(aes(size = total_subplot), position = position_jitter(width = 0.1),
+             alpha = 0.5) +
+  facet_grid(~plot)
 
 ##############################################################################
 ## Phi2 - Mai
@@ -817,6 +834,76 @@ iwue_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
         panel.grid.minor.y = element_blank()) +
   guides(fill = "none")
 iwue_mai_plot
+
+##############################################################################
+## SPAD:gs - Tri
+##############################################################################
+Anova(spad.gs.tri)
+
+spadgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
+                           aes(x = canopy, y = spad.gs, fill = gm.trt)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
+               position = position_dodge(width = 0.75)) +
+  geom_boxplot(width = 0.5, outlier.shape = NA,
+               position = position_dodge(width = 0.75)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.25, 
+                                             dodge.width = 0.75),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  annotate(geom = "text", x = 1.5, y = 1000, size = 4,
+           label = expression(italic("Alliaria")*" treatment: "*italic("p")*">0.05")) +
+  scale_x_discrete(labels = c("weeded", "ambient")) +
+  scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 1000, 500)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold(italic("V")["cmax25"]*" : g"["sw"]*" ("*mu*"mol mol"^"-1"*")"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+spadgs_tri_plot
+
+##############################################################################
+## SPAD:gs - Mai
+##############################################################################
+Anova(spad.gs.mai)
+spad.gs_mai_results <- cld(emmeans(spad.gs.mai, ~gm.trt*canopy, type = "response"), 
+                         Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
+
+spadgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
+                          aes(x = canopy, y = spad.gs, fill = gm.trt)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
+               position = position_dodge(width = 0.75)) +
+  geom_boxplot(position = position_dodge(0.75),
+               width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
+                                             jitter.width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = spad.gs_mai_results, 
+            aes(x = canopy, y = 4000, group = gm.trt, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_x_discrete(labels = c("weeded", "ambient")) +
+  scale_y_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 1000)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold("SPAD : g"["sw"]*" (mol mol"^"-1"*")"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic", size = 18),
+        panel.grid.minor.y = element_blank()) +
+  guides(fill = "none")
+spadgs_mai_plot
 
 ##############################################################################
 ## Vcmax:gs - Tri

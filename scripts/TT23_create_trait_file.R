@@ -18,10 +18,8 @@ ammonium_corrected <- read.csv("../data/raw_data/TT23_resin_strip_corrected_ammo
 
 nutrients <- phos_nit_corrected %>%
   full_join(ammonium_corrected, by = c("plot", "composite", "canopy")) %>%
-  dplyr::select(-subplot.y, -X, 
-                plot, subplot = subplot.x, composite:days_deployed,
-                phosphate_ug = phosphate_ppm, nitrate_ug = nitrate_ppm,
-                ammonium_ug = ammonium_ppm) %>%
+  dplyr::select(plot, composite:days_deployed,
+                phosphate_ppm, nitrate_ppm, ammonium_ppm) %>%
   mutate(days_deployed = ifelse(canopy == "post_closure" & plot == 3,
                                 29, 
                                 ifelse(canopy == "post_closure" & plot == 5,
@@ -34,19 +32,15 @@ nutrients <- phos_nit_corrected %>%
                                                             42,
                                                             ifelse(canopy == "pre_closure" & plot == 7,
                                                                    35, NA))))))) %>%
-  group_by(canopy, plot, composite, days_deployed) %>%
-  summarize(phosphate_ug = mean(phosphate_ug, na.rm = TRUE),
-            nitrate_ug = mean(nitrate_ug, na.rm = TRUE),
-            ammonium_ug = mean(ammonium_ug, na.rm = TRUE)) %>%
-  mutate(phosphate_ug = na_if(phosphate_ug, NaN),
-         nitrate_ug = na_if(nitrate_ug, NaN),
-         ammonium_ug = na_if(ammonium_ug, NaN)) %>%
-  mutate(inorg_n_ug = ifelse(!is.na(nitrate_ug) & !is.na(ammonium_ug),
-                             nitrate_ug + ammonium_ug, NA),
-         phosphate_ug_day = phosphate_ug / days_deployed,
-         nitrate_ug_day = nitrate_ug / days_deployed,
-         ammonium_ug_day = ammonium_ug / days_deployed,
-         inorg_n_ug_day = inorg_n_ug / days_deployed)
+  group_by(canopy, plot, composite) %>%
+  summarize(phosphate_ppm = mean(phosphate_ppm, na.rm = TRUE),
+            nitrate_ppm = mean(nitrate_ppm, na.rm = TRUE),
+            ammonium_ppm = mean(ammonium_ppm, na.rm = TRUE)) %>%
+  mutate(phosphate_ppm = ifelse(phosphate_ppm == "NaN", NA, phosphate_ppm),
+         nitrate_ppm = ifelse(nitrate_ppm == "NaN", NA, nitrate_ppm),
+         ammonium_ppm = ifelse(ammonium_ppm == "NaN", NA, ammonium_ppm)) %>%
+  mutate(inorg_n_ppm = ifelse(!is.na(nitrate_ppm) & !is.na(ammonium_ppm),
+                             nitrate_ppm + ammonium_ppm, NA))
 
 #####################################################################
 # Join multispeq and physiology data set

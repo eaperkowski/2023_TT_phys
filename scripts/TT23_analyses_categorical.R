@@ -14,18 +14,22 @@ df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
          vcmax.gs = vcmax25 / gsw)
 head(df)
 
+# Helper fxn to change "NaN" to "NA"
+NaN_to_NA <- function(x) ifelse(is.nan(x), NA, x)
+
 ## Read and subset soil dataset
 df.soil <- df %>%
-  group_by(plot, composite, gm.trt, canopy, days_deployed) %>%
-  summarize_at(.vars = vars(phosphate_ug:inorg_n_ug_day),
-               .funs = mean) %>%
+  group_by(plot, composite, gm.trt, canopy) %>%
+  summarize_at(.vars = vars(phosphate_ppm:inorg_n_ppm),
+               .funs = mean, na.rm = TRUE) %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
-         canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
+         canopy = factor(canopy, levels = c("pre_closure", "post_closure"))) %>%
+  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA))
 
 ##############################################################################
 ## Nitrate
 ##############################################################################
-nitrate <- lmer(nitrate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+nitrate <- lmer(nitrate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(nitrate)
@@ -46,9 +50,9 @@ emmeans(nitrate, pairwise~canopy)
 ##############################################################################
 ## Ammonium
 ##############################################################################
-df.soil$ammonium_ug_day[c(34, 40, 56)] <- NA
+df.soil$ammonium_ppm[c(40, 56)] <- NA
 
-ammonium <- lmer(ammonium_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+ammonium <- lmer(ammonium_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(ammonium)
@@ -64,13 +68,14 @@ Anova(ammonium)
 r.squaredGLMM(ammonium)
 
 # Pairwise comparisons
-cld(emmeans(ammonium, pairwise~canopy*gm.trt))
+cld(emmeans(ammonium, pairwise~canopy*gm.trt), Letters = LETTERS)
+emmeans(ammonium, pairwise~canopy)
 
 ##############################################################################
 ## Phosphate
 ##############################################################################
 phosphate <- lmer(
-  phosphate_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  phosphate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(phosphate)
@@ -87,12 +92,13 @@ r.squaredGLMM(phosphate)
 
 # Pairwise comparisons
 emmeans(phosphate, pairwise~gm.trt)
+emmeans(phosphate, pairwise~canopy)
 
 ##############################################################################
 ## N availability (nitrate + ammonium)
 ##############################################################################
 plant_availableN <- lmer(
-  inorg_n_ug_day ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  inorg_n_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(plant_availableN)
@@ -109,6 +115,7 @@ r.squaredGLMM(plant_availableN)
 
 # Pairwise comparisons
 cld(emmeans(plant_availableN, pairwise~gm.trt*canopy))
+emmeans(plant_availableN, pairwise~canopy)
 
 ##############################################################################
 ## Anet - Tri
@@ -446,119 +453,6 @@ emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 (0.592 - 0.567) / 0.592 * 100
 
 ##############################################################################
-## iWUE - Tri
-##############################################################################
-df$iwue[c(80, 86, 116)] <- NA
-
-iwue.tri <- lmer(
-  iwue ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
-# Check model assumptions
-plot(iwue.tri)
-qqnorm(residuals(iwue.tri))
-qqline(residuals(iwue.tri))
-densityPlot(residuals(iwue.tri))
-shapiro.test(residuals(iwue.tri))
-outlierTest(iwue.tri)
-
-# Model output
-summary(iwue.tri)
-Anova(iwue.tri)
-r.squaredGLMM(iwue.tri)
-
-# Pairwise comparisons
-emmeans(iwue.tri, pairwise~canopy)
-emmeans(iwue.tri, pairwise~gm.trt)
-
-# % change canopy
-(44.6 - 91.3) / 44.6 * 100
-
-##############################################################################
-## iWUE - Mai
-##############################################################################
-iwue.mai <- lmer(
-  iwue ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
-
-# Check model assumptions
-plot(iwue.mai)
-qqnorm(residuals(iwue.mai))
-qqline(residuals(iwue.mai))
-densityPlot(residuals(iwue.mai))
-shapiro.test(residuals(iwue.mai))
-outlierTest(iwue.mai)
-
-# Model output
-summary(iwue.mai)
-Anova(iwue.mai)
-r.squaredGLMM(iwue.mai)
-
-# Pairwise comparisons
-emmeans(iwue.mai, pairwise~canopy)
-emmeans(iwue.mai, pairwise~gm.trt)
-
-# % change canopy
-(78.9 - 62.6) / 78.9 * 100 
-
-# % change gm.trt
-(82.6 - 58.9) / 82.6 * 100
-
-##############################################################################
-## Vcmax25:gs - Tri
-##############################################################################
-vcmax.gs.tri <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
-# Check model assumptions
-plot(vcmax.gs.tri)
-qqnorm(residuals(vcmax.gs.tri))
-qqline(residuals(vcmax.gs.tri))
-densityPlot(residuals(vcmax.gs.tri))
-shapiro.test(residuals(vcmax.gs.tri))
-outlierTest(vcmax.gs.tri)
-
-# Model output
-summary(vcmax.gs.tri)
-Anova(vcmax.gs.tri)
-r.squaredGLMM(vcmax.gs.tri)
-
-# Pairwise comparisons
-emmeans(vcmax.gs.tri, pairwise~canopy)
-
-# % change canopy
-(5.4 - 6.61) / 5.4 * 100
-
-##############################################################################
-## Vcmax25:gs - Mai
-##############################################################################
-vcmax.gs.mai <- lmer(
-  log(vcmax.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
-# Check model assumptions
-plot(vcmax.gs.mai)
-qqnorm(residuals(vcmax.gs.mai))
-qqline(residuals(vcmax.gs.mai))
-densityPlot(residuals(vcmax.gs.mai))
-shapiro.test(residuals(vcmax.gs.mai))
-outlierTest(vcmax.gs.mai)
-
-# Model output
-summary(vcmax.gs.mai)
-Anova(vcmax.gs.mai)
-r.squaredGLMM(vcmax.gs.mai)
-
-# Pairwise comparisons
-emmeans(vcmax.gs.mai, pairwise~canopy, type = "response")
-emmeans(vcmax.gs.mai, pairwise~gm.trt, type = "response")
-cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy))
-
-# % change canopy
-(463 -  370) / 463 * 100
-
-# % change gm.trt
-(519 - 330) / 519 * 100
-
-
-##############################################################################
 ## SPAD - Tri
 ##############################################################################
 spad.tri <- lmer(
@@ -664,6 +558,169 @@ emmeans(phips2.mai, pairwise~canopy)
 
 # % change canopy
 (0.410 - 0.267) / 0.410 * 100
+
+##############################################################################
+## iWUE - Tri
+##############################################################################
+df$iwue[c(80, 86, 116)] <- NA
+
+iwue.tri <- lmer(
+  iwue ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(iwue.tri)
+qqnorm(residuals(iwue.tri))
+qqline(residuals(iwue.tri))
+densityPlot(residuals(iwue.tri))
+shapiro.test(residuals(iwue.tri))
+outlierTest(iwue.tri)
+
+# Model output
+summary(iwue.tri)
+Anova(iwue.tri)
+r.squaredGLMM(iwue.tri)
+
+# Pairwise comparisons
+emmeans(iwue.tri, pairwise~canopy)
+emmeans(iwue.tri, pairwise~gm.trt)
+
+# % change canopy
+(44.6 - 91.3) / 44.6 * 100
+
+##############################################################################
+## iWUE - Mai
+##############################################################################
+iwue.mai <- lmer(
+  iwue ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(iwue.mai)
+qqnorm(residuals(iwue.mai))
+qqline(residuals(iwue.mai))
+densityPlot(residuals(iwue.mai))
+shapiro.test(residuals(iwue.mai))
+outlierTest(iwue.mai)
+
+# Model output
+summary(iwue.mai)
+Anova(iwue.mai)
+r.squaredGLMM(iwue.mai)
+
+# Pairwise comparisons
+emmeans(iwue.mai, pairwise~canopy)
+emmeans(iwue.mai, pairwise~gm.trt)
+
+# % change canopy
+(78.9 - 62.6) / 78.9 * 100 
+
+# % change gm.trt
+(82.6 - 58.9) / 82.6 * 100
+
+##############################################################################
+## SPAD:gs - Tri
+##############################################################################
+df$spad.gs <- df$SPAD / df$gsw
+
+spad.gs.tri <- lmer(
+  log(spad.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(spad.gs.tri)
+qqnorm(residuals(spad.gs.tri))
+qqline(residuals(spad.gs.tri))
+densityPlot(residuals(spad.gs.tri))
+shapiro.test(residuals(spad.gs.tri))
+outlierTest(spad.gs.tri)
+
+# Model output
+summary(spad.gs.tri)
+Anova(spad.gs.tri)
+r.squaredGLMM(spad.gs.tri)
+
+# Pairwise comparisons
+emmeans(spad.gs.tri, pairwise~canopy)
+
+##############################################################################
+## SPAD:gs - Mai
+##############################################################################
+df$spad.gs[c(49, 132)] <- NA
+
+spad.gs.mai <- lmer(
+  log(spad.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(spad.gs.mai)
+qqnorm(residuals(spad.gs.mai))
+qqline(residuals(spad.gs.mai))
+densityPlot(residuals(spad.gs.mai))
+shapiro.test(residuals(spad.gs.mai))
+outlierTest(spad.gs.mai)
+
+# Model output
+summary(spad.gs.mai)
+Anova(spad.gs.mai)
+r.squaredGLMM(spad.gs.mai)
+
+# Pairwise comparisons
+emmeans(spad.gs.mai, pairwise~canopy)
+emmeans(spad.gs.mai, pairwise~gm.trt)
+cld(emmeans(spad.gs.mai, pairwise~gm.trt*canopy))
+
+##############################################################################
+## Vcmax25:gs - Tri
+##############################################################################
+vcmax.gs.tri <- lmer(
+  log(vcmax.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(vcmax.gs.tri)
+qqnorm(residuals(vcmax.gs.tri))
+qqline(residuals(vcmax.gs.tri))
+densityPlot(residuals(vcmax.gs.tri))
+shapiro.test(residuals(vcmax.gs.tri))
+outlierTest(vcmax.gs.tri)
+
+# Model output
+summary(vcmax.gs.tri)
+Anova(vcmax.gs.tri)
+r.squaredGLMM(vcmax.gs.tri)
+
+# Pairwise comparisons
+emmeans(vcmax.gs.tri, pairwise~canopy)
+
+# % change canopy
+(5.4 - 6.61) / 5.4 * 100
+
+##############################################################################
+## Vcmax25:gs - Mai
+##############################################################################
+vcmax.gs.mai <- lmer(
+  log(vcmax.gs) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(vcmax.gs.mai)
+qqnorm(residuals(vcmax.gs.mai))
+qqline(residuals(vcmax.gs.mai))
+densityPlot(residuals(vcmax.gs.mai))
+shapiro.test(residuals(vcmax.gs.mai))
+outlierTest(vcmax.gs.mai)
+
+# Model output
+summary(vcmax.gs.mai)
+Anova(vcmax.gs.mai)
+r.squaredGLMM(vcmax.gs.mai)
+
+# Pairwise comparisons
+emmeans(vcmax.gs.mai, pairwise~canopy, type = "response")
+emmeans(vcmax.gs.mai, pairwise~gm.trt, type = "response")
+cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy))
+
+# % change canopy
+(463 -  370) / 463 * 100
+
+# % change gm.trt
+(519 - 330) / 519 * 100
+
 
 ##############################################################################
 ## Write Table 1: Soil nutrients
