@@ -24,7 +24,8 @@ df.soil <- df %>%
                .funs = mean, na.rm = TRUE) %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure"))) %>%
-  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA))
+  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA),
+         np.ratio = inorg_n_ppm/phosphate_ppm)
 
 ##############################################################################
 ## Nitrate
@@ -46,6 +47,9 @@ r.squaredGLMM(nitrate)
 
 # Pairwise comparisons
 emmeans(nitrate, pairwise~canopy)
+
+# % change nitrate with canopy status
+(5.32 - 18.57) / 18.57 * 100
 
 ##############################################################################
 ## Ammonium
@@ -94,6 +98,9 @@ r.squaredGLMM(phosphate)
 emmeans(phosphate, pairwise~gm.trt)
 emmeans(phosphate, pairwise~canopy)
 
+# % change canopy
+(0.81 - 1.09) / 1.09 * 100
+
 ##############################################################################
 ## N availability (nitrate + ammonium)
 ##############################################################################
@@ -115,7 +122,42 @@ r.squaredGLMM(plant_availableN)
 
 # Pairwise comparisons
 cld(emmeans(plant_availableN, pairwise~gm.trt*canopy))
+emmeans(plant_availableN, pairwise~gm.trt)
 emmeans(plant_availableN, pairwise~canopy)
+
+# Percent change due to canopy
+(5.62 - 18.57) / 18.57 * 100
+
+##############################################################################
+## Soil N:P
+##############################################################################
+df.soil$np.ratio[c(55)] <- NA
+
+n_to_p_ratio <- lmer(
+  np.ratio ~ gm.trt * canopy + (1 | plot), data = df.soil)
+
+# Check model assumptions
+plot(n_to_p_ratio)
+qqnorm(residuals(n_to_p_ratio))
+qqline(residuals(n_to_p_ratio))
+densityPlot(residuals(n_to_p_ratio))
+shapiro.test(residuals(n_to_p_ratio))
+outlierTest(n_to_p_ratio)
+
+# Model output
+summary(n_to_p_ratio)
+Anova(n_to_p_ratio)
+r.squaredGLMM(n_to_p_ratio)
+
+# Pairwise comparisons
+emmeans(n_to_p_ratio, pairwise~gm.trt)
+emmeans(n_to_p_ratio, pairwise~canopy)
+
+# Percent change due to GM treatment
+(17.1 - 10.2) / 10.2 * 100
+
+# Percent change due to canopy
+(9.2 - 18.1) / 18.1 * 100
 
 ##############################################################################
 ## Anet - Tri

@@ -20,8 +20,7 @@ df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
   mutate(gm.canopy = factor(gm.canopy, levels = c("weeded_pre_closure",
                                                   "invaded_pre_closure",
                                                   "weeded_post_closure",
-                                                  "invaded_post_closure")),
-         spad.gs = SPAD / gsw)
+                                                  "invaded_post_closure")))
 head(df)
 
 # helper fxn to change "NaN" to "NA"
@@ -32,12 +31,14 @@ df.soil <- df %>%
   group_by(plot, composite, gm.trt, canopy) %>%
   summarize_at(.vars = vars(phosphate_ppm:inorg_n_ppm),
                .funs = mean, na.rm = TRUE) %>%
-  mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
+  mutate(gm.trt = factor(gm.trt, levels = c("weeded", "invaded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure"))) %>%
-  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA))
+  mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA),
+         np.ratio = inorg_n_ppm/phosphate_ppm)
 
 ## Remove outliers
 df.soil$ammonium_ppm[c(40, 56)] <- NA
+df.soil$np.ratio[c(55)] <- NA
 df$anet[c(35, 71, 80, 86, 116, 120)] <- NA
 df$gsw[c(86, 120)] <- NA
 df$stom.lim[c(228, 229)] <- NA
@@ -56,6 +57,8 @@ phosphate <- lmer(phosphate_ppm ~ gm.trt * canopy + (1 | plot),
                   data = df.soil)
 plant_availableN <- lmer(inorg_n_ppm ~ gm.trt * canopy + (1 | plot), 
                          data = df.soil)
+n_to_p_ratio <- lmer(np.ratio ~ gm.trt * canopy + (1 | plot), 
+                     data = df.soil)
 
 ## Create models for photosynthesis data
 anet.tri <- lmer(anet ~ gm.trt * canopy + (1 | plot),
@@ -102,13 +105,14 @@ names(facet.labs) <- c("Tri", "Mai")
 ##############################################################################
 ## Soil N availability 
 ##############################################################################
-# Prep file for figure
-n_results <- cld(emmeans(plant_availableN, ~canopy*gm.trt), Letters = LETTERS) %>%
-  mutate(.group = c("B", "B", "A", "A"))
+# Prep file for gm.trt figure
+inorgN_gmtrt_results <- cld(emmeans(plant_availableN, pairwise~gm.trt), 
+                               Letters = LETTERS) %>%
+  mutate(.group = trimws(.group, "both"))
 
-n_plantavailable_plot <- ggplot(data = df.soil,
-                                aes(x = canopy, y = inorg_n_ppm, 
-                                    fill = gm.trt)) +
+nitrogen_gmtrt_plot <- ggplot(data = df.soil,
+                               aes(x = gm.trt, y = inorg_n_ppm, 
+                                   fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
   geom_boxplot(position = position_dodge(0.75),
@@ -116,35 +120,63 @@ n_plantavailable_plot <- ggplot(data = df.soil,
   geom_point(position = position_jitterdodge(dodge.width = 0.75, 
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = n_results, 
-            aes(x = canopy, y = 40, group = gm.trt, label = .group),
+  geom_text(data = inorgN_gmtrt_results, 
+            aes(x = gm.trt, y = 40, label = .group),
             position = position_dodge(width = 0.75), 
-            fontface = "bold", size = 6) + 
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
-  labs(x = "Tree canopy status",
-       y = "Soil inorganic N (ppm)",
-       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       y = "Soil inorg. N (ppm)") +
+  guides(fill = "none") +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
-        legend.text.align = 0,
         panel.grid.minor.y = element_blank())
-n_plantavailable_plot
+nitrogen_gmtrt_plot
+
+# Prep file for canopy figure
+inorgN_canopy_results <- cld(emmeans(plant_availableN, pairwise~canopy),
+                             Letters = LETTERS) %>%
+  mutate(.group = c("B", "A"))
+
+nitrogen_canopy_plot <- ggplot(data = df.soil,
+                                aes(x = canopy, y = inorg_n_ppm, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
+                                             jitter.width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = phosphate_canopy_results, 
+            aes(x = canopy, y = 40, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
+  labs(x = "Measurement period",
+       y = "Soil inorg. N (ppm)") +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(face = "bold"),
+        panel.grid.minor.y = element_blank())
+nitrogen_canopy_plot
 
 ##############################################################################
 ## Phosphate figure  
 ##############################################################################
-# Prep file for figure
-phosphate_results <- cld(emmeans(phosphate, pairwise~canopy*gm.trt), 
+# Prep file for gm.trt figure
+phosphate_gmtrt_results <- cld(emmeans(phosphate, pairwise~gm.trt), 
                          Letters = LETTERS) %>%
-  mutate(.group = trimws(.group, which = "both"))
+  mutate(.group = trimws(.group, "both"))
 
-phosphate_plot <- ggplot(data = df.soil,
-                         aes(x = canopy, y = phosphate_ppm, 
+phosphate_gmtrt_plot <- ggplot(data = df.soil,
+                         aes(x = gm.trt, y = phosphate_ppm, 
                              fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
@@ -153,23 +185,116 @@ phosphate_plot <- ggplot(data = df.soil,
   geom_point(position = position_jitterdodge(dodge.width = 0.75, 
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = phosphate_results, 
-            aes(x = canopy, y = 2, group = gm.trt, label = .group),
+  geom_text(data = phosphate_gmtrt_results, 
+            aes(x = gm.trt, y = 2, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
-  labs(x = "Tree canopy status",
-       y = "Soil P (ppm)",
-       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       y = "Soil phosphate (ppm)") +
+  guides(fill = "none") +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         axis.title.y = element_text(size = 16),
         legend.title = element_text(face = "bold"),
         panel.grid.minor.y = element_blank())
-phosphate_plot
+phosphate_gmtrt_plot
+
+# Prep file for canopy figure
+phosphate_canopy_results <- cld(emmeans(phosphate, pairwise~canopy), 
+                               Letters = LETTERS) %>%
+  mutate(.group = c("B", "A"))
+
+phosphate_canopy_plot <- ggplot(data = df.soil,
+                               aes(x = canopy, y = phosphate_ppm, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
+                                             jitter.width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = phosphate_canopy_results, 
+            aes(x = canopy, y = 2, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+                    labels = c("weeded", "ambient")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
+  scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
+  labs(x = "Measurement period",
+       y = "Soil phosphate (ppm)") +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(face = "bold"),
+        panel.grid.minor.y = element_blank())
+phosphate_canopy_plot
+
+##############################################################################
+## Soil N:P figure  
+##############################################################################
+Anova(n_to_p_ratio)
+
+# Prep file for gm.trt figure
+soil_np_results_gmtrt <- cld(emmeans(n_to_p_ratio, pairwise~gm.trt), 
+                         Letters = LETTERS) %>%
+  mutate(.group = trimws(.group, which = "both"))
+
+soil_np_gmtrt_plot <- ggplot(data = df.soil,
+                       aes(x = gm.trt, y = np.ratio, fill = gm.trt)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
+                                             jitter.width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = soil_np_results_gmtrt, 
+            aes(x = gm.trt, y = 40, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_x_discrete(labels = c("weeded", "ambient")) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
+  labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       y = "Soil N:P ratio (unitless)") +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(face = "bold"),
+        panel.grid.minor.y = element_blank())
+soil_np_gmtrt_plot
+
+# Prep file for measurement period figure
+soil_np_results_canopy <- cld(emmeans(n_to_p_ratio, pairwise~canopy), 
+                             Letters = LETTERS) %>%
+  mutate(.group = c("B", "A"))
+
+soil_np_canopy_plot <- ggplot(data = df.soil,
+                             aes(x = canopy, y = np.ratio, fill = canopy)) +
+  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
+  geom_boxplot(width = 0.5, outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
+                                             jitter.width = 0.1),
+             alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = soil_np_results_canopy, 
+            aes(x = canopy, y = 40, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
+  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
+  labs(x = "Measurement period",
+       y = "Soil N:P ratio (unitless)") +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(face = "bold"),
+        panel.grid.minor.y = element_blank())
+soil_np_canopy_plot
 
 ##############################################################################
 ## Soil nitrate
@@ -956,11 +1081,12 @@ vcmaxgs_mai_plot
 ##############################################################################
 ## Figure 1: Soil nutrients 
 ##############################################################################
-png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 8, height = 8,
+png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 12, height = 8,
     units = "in", res = 600)
-ggarrange(n_plantavailable_plot, phosphate_plot, no3_plot, nh4_plot,
-          common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2,
-          align = "hv", labels = c("(a)", "(b)", "(c)", "(d)"), 
+ggarrange(nitrogen_gmtrt_plot, phosphate_gmtrt_plot, soil_np_gmtrt_plot,
+          nitrogen_canopy_plot, phosphate_canopy_plot, soil_np_canopy_plot,
+          ncol = 3, nrow = 2, hjust = 0,
+          align = "hv", labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
 dev.off()
 
