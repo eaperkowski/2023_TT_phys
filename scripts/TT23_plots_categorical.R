@@ -15,7 +15,8 @@ df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
   mutate(gm.trt = factor(gm.trt, levels = c( "weeded", "invaded")),
          canopy = factor(canopy, levels = c("pre_closure", "post_closure")),
          spp = factor(spp, levels = c("Tri", "Mai", "Ari")),
-         vcmax.gs = vcmax25 / gsw) %>%
+         vcmax.gs = vcmax25 / gsw,
+         spad.gs = SPAD / gsw) %>%
   unite(col = "gm.canopy", gm.trt, canopy, sep = "_", remove = FALSE) %>%
   mutate(gm.canopy = factor(gm.canopy, levels = c("weeded_pre_closure",
                                                   "invaded_pre_closure",
@@ -45,6 +46,7 @@ df$stom.lim[c(228, 229)] <- NA
 df$vcmax25[c(183, 231)] <- NA
 df$jmax25[183] <- NA
 df$jmax.vcmax[c(94, 184, 224, 225, 231)] <- NA
+df$SPAD[c(122)] <- NA
 df$iwue[c(80, 86, 104)] <- NA
 df$spad.gs[c(49, 132)] <- NA
 
@@ -85,6 +87,11 @@ jmax.vcmax.tri <- lmer(log(jmax.vcmax) ~ gm.trt * canopy + (1 | plot),
                        data = subset(df, spp == "Tri"))
 jmax.vcmax.mai <- lmer(log(jmax.vcmax) ~ gm.trt * canopy + (1 | plot),
                        data = subset(df, spp == "Mai"))
+spad.tri <- lmer(SPAD ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Tri"))
+spad.mai <- lmer(SPAD ~ gm.trt * canopy + (1 | plot),
+                 data = subset(df, spp == "Mai"))
+
 iwue.tri <- lmer(log(iwue) ~ gm.trt * canopy + (1 | plot),
                  data = subset(df, spp == "Tri"))
 iwue.mai <- lmer(log(iwue) ~ gm.trt * canopy  + (1 | plot),
@@ -139,8 +146,8 @@ nitrogen_gmtrt_plot
 
 # Prep file for canopy figure
 inorgN_canopy_results <- cld(emmeans(plant_availableN, pairwise~canopy),
-                             Letters = LETTERS) %>%
-  mutate(.group = c("B", "A"))
+                             Letters = LETTERS, reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
 
 nitrogen_canopy_plot <- ggplot(data = df.soil,
                                 aes(x = canopy, y = inorg_n_ppm, fill = canopy)) +
@@ -205,8 +212,8 @@ phosphate_gmtrt_plot
 
 # Prep file for canopy figure
 phosphate_canopy_results <- cld(emmeans(phosphate, pairwise~canopy), 
-                               Letters = LETTERS) %>%
-  mutate(.group = c("B", "A"))
+                               Letters = LETTERS, reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
 
 phosphate_canopy_plot <- ggplot(data = df.soil,
                                aes(x = canopy, y = phosphate_ppm, fill = canopy)) +
@@ -269,8 +276,7 @@ soil_np_gmtrt_plot
 
 # Prep file for measurement period figure
 soil_np_results_canopy <- cld(emmeans(n_to_p_ratio, pairwise~canopy), 
-                             Letters = LETTERS) %>%
-  mutate(.group = c("B", "A"))
+                             Letters = LETTERS, reversed = TRUE)
 
 soil_np_canopy_plot <- ggplot(data = df.soil,
                              aes(x = canopy, y = np.ratio, fill = canopy)) +
@@ -300,8 +306,8 @@ soil_np_canopy_plot
 ## Soil nitrate
 ##############################################################################
 # Prep file for figure
-no3_results <- cld(emmeans(nitrate, ~canopy*gm.trt), Letters = LETTERS) %>%
-  mutate(.group = c("B", "B", "A", "A"))
+no3_results <- cld(emmeans(nitrate, ~canopy*gm.trt), Letters = LETTERS, reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
 
 no3_plot <- ggplot(data = df.soil,
                                 aes(x = canopy, y = nitrate_ppm, 
@@ -370,9 +376,9 @@ nh4_plot
 ##############################################################################
 Anova(anet.tri)
 
-anet_tri_results <- cld(emmeans(anet.tri, ~gm.trt, type = "response"), 
+anet_tri_results <- cld(emmeans(anet.tri, ~canopy*gm.trt, type = "response"), 
                 Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("A", "A"))
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = gm.trt, y = anet, fill = gm.trt)) +
@@ -380,8 +386,10 @@ anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  annotate(geom = "text", x = 1.5, y = 18, size = 4,
-           label = expression(italic("A. petiolata")*" treatment: "*italic("p")*">0.05")) +
+  geom_text(data = anet_tri_results, 
+            aes(x = gm.trt, y = 18, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 6)) +
@@ -404,7 +412,7 @@ anet_tri_plot
 Anova(anet.mai)
 
 anet_mai_results <- cld(emmeans(anet.mai, ~gm.trt, type = "response"), 
-                        Letters = LETTERS) %>% 
+                        Letters = LETTERS, reversed = TRUE) %>% 
   data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
@@ -413,9 +421,11 @@ anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
+  geom_text(data = anet_mai_results, 
+            aes(x = gm.trt, y = 18, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 18, size = 4,
-           label = expression(bolditalic("A. petiolata")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 6)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -436,6 +446,10 @@ anet_mai_plot
 ##############################################################################
 Anova(gsw.tri)
 
+gsw_tri_results <- cld(emmeans(gsw.tri, ~gm.trt, type = "response"), 
+                        Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
 gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                   aes(x = gm.trt, y = gsw, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -443,8 +457,10 @@ gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 0.3, size = 4,
-           label = expression(italic("A. petiolata")*" treatment: "*italic("p")*">0.05")) +
+  geom_text(data = gsw_tri_results, 
+            aes(x = gm.trt, y = 0.3, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 0.3), breaks = seq(0, 0.3, 0.1)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -465,6 +481,10 @@ gsw_tri_plot
 ##############################################################################
 Anova(gsw.mai)
 
+gsw_mai_results <- cld(emmeans(gsw.mai, ~gm.trt, type = "response"), 
+                        Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
 gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                        aes(x = gm.trt, y = gsw, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -472,8 +492,10 @@ gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 0.3, size = 4,
-           label = expression(bolditalic("A. petiolata")*bold(" treatment: ")*bolditalic("p")*bold("<0.001"))) +
+  geom_text(data = gsw_mai_results, 
+            aes(x = gm.trt, y = 0.3, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 0.3), breaks = seq(0, 0.3, 0.1)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -494,6 +516,10 @@ gsw_mai_plot
 ##############################################################################
 Anova(stomlim.tri)
 
+stomlim_tri_results <- cld(emmeans(stomlim.tri, ~gm.trt, type = "response"), 
+                       Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
 stomlim_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                            aes(x = gm.trt, y = stom.lim, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -501,8 +527,10 @@ stomlim_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 1, size = 4,
-           label = expression(italic("A. petiolata")*" treatment: "*italic("p")*">0.05")) +
+  geom_text(data = stomlim_tri_results, 
+            aes(x = gm.trt, y = 1, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -523,6 +551,10 @@ stomlim_tri_plot
 ##############################################################################
 Anova(stom.lim.mai)
 
+stomlim_mai_results <- cld(emmeans(stom.lim.mai, ~gm.trt, type = "response"), 
+                       Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
 stomlim_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                            aes(x = gm.trt, y = stom.lim, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -530,8 +562,10 @@ stomlim_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 1, size = 4,
-           label = expression(bolditalic("A. petiolata")*bold(" treatment: ")*bolditalic("p")*bold("<0.05"))) +
+  geom_text(data = stomlim_mai_results, 
+            aes(x = gm.trt, y = 1, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -552,9 +586,9 @@ stomlim_mai_plot
 ##############################################################################
 Anova(vcmax.tri)
 
-vcmax_tri_results <- cld(emmeans(vcmax.tri, ~gm.trt*canopy, type = "response"), 
-                           Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "B", "A", "A"), spp = "Tri")
+vcmax_tri_results <- cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy, type = "response"), 
+                           Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                            aes(x = canopy, y = vcmax25, fill = gm.trt)) +
@@ -571,9 +605,9 @@ vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -592,8 +626,8 @@ vcmax_tri_plot
 Anova(vcmax.mai)
 
 vcmax_mai_results <- cld(emmeans(vcmax.mai, ~gm.trt*canopy, type = "response"), 
-                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "B", "A", "A"), spp = "Mai")
+                         Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                          aes(x = canopy, y = vcmax25, fill = gm.trt)) +
@@ -610,9 +644,9 @@ vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
-  labs(x = "Tree anopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -629,8 +663,8 @@ vcmax_mai_plot
 ## Jmax - Tri
 ##############################################################################
 jmax_tri_results <- cld(emmeans(jmax.tri, ~gm.trt*canopy, type = "response"), 
-                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("C", "B", "A", "A"))
+                         Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                          aes(x = canopy, y = jmax25, fill = gm.trt)) +
@@ -647,9 +681,9 @@ jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -668,8 +702,8 @@ jmax_tri_plot
 Anova(jmax.mai)
 
 jmax_mai_results <- cld(emmeans(jmax.mai, ~gm.trt*canopy, type = "response"), 
-                         Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "B", "A", "A"))
+                         Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                          aes(x = canopy, y = jmax25, fill = gm.trt)) +
@@ -686,9 +720,9 @@ jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -705,8 +739,8 @@ jmax_mai_plot
 ## Jmax: Vcmax - Tri
 ##############################################################################
 jvmax_tri_results <- cld(emmeans(jmax.vcmax.tri, ~gm.trt*canopy, type = "response"), 
-                        Letters = LETTERS) %>% 
-  data.frame() %>% mutate(.group = c("B", "AB", "AB", "A"))
+                        Letters = LETTERS, reversed = TRUE) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
 
 jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                         aes(x = canopy, y = jmax.vcmax, fill = gm.trt)) +
@@ -724,9 +758,9 @@ jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", 
                                "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -761,9 +795,9 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             fontface = "bold", size = 6) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
                     labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
@@ -779,6 +813,12 @@ jvmax_mai_plot
 ##############################################################################
 ## SPAD - Tri
 ##############################################################################
+Anova(spad.tri)
+
+spad_tri_results <- cld(emmeans(spad.tri, ~canopy, type = "response"), 
+                         Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
 spad_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                        aes(x = canopy, y = SPAD, fill = canopy)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -786,11 +826,13 @@ spad_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 60, size = 4,
-           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
-  scale_x_discrete(labels = c("open", "closed")) +
+  geom_text(data = spad_tri_results, 
+            aes(x = canopy, y = 60, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
+  scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(15, 60), breaks = seq(15, 60, 15)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = "SPAD (unitless)") +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -804,8 +846,15 @@ spad_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
 spad_tri_plot
 
 ##############################################################################
-## SPAD - Tri
+## SPAD - Mai
 ##############################################################################
+Anova(spad.mai)
+
+spad_tri_results <- cld(emmeans(spad.mai, ~canopy, type = "response"), 
+                        Letters = LETTERS) %>% 
+  data.frame() %>% mutate(.group = trimws(.group, "both"))
+
+
 spad_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                         aes(x = canopy, y = SPAD, fill = canopy)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
@@ -813,11 +862,13 @@ spad_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
-  annotate(geom = "text", x = 1.5, y = 60, size = 4,
-           label = expression(bold("Tree canopy status: ")*bolditalic("p")*bold("<0.001"))) +
+  geom_text(data = spad_mai_results, 
+            aes(x = canopy, y = 60, label = .group),
+            position = position_dodge(width = 0.75), 
+            fontface = "bold", size = 6) +
   scale_x_discrete(labels = c("open", "closed")) +
   scale_y_continuous(limits = c(15, 60), breaks = seq(15, 60, 15)) +
-  labs(x = "Tree canopy status",
+  labs(x = "Measurement period",
        y = "SPAD (unitless)") +
   facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
   theme_classic(base_size = 18) +
@@ -1096,7 +1147,7 @@ dev.off()
 png("../drafts/figs/TT23_fig2_gasExchange.png", width = 12, height = 8,
     units = "in", res = 600)
 ggarrange(anet_tri_plot, gsw_tri_plot, stomlim_tri_plot, anet_mai_plot,  
-          gsw_mai_plot, stomlim_mai_plot, common.legend = TRUE, 
+          gsw_mai_plot, stomlim_mai_plot, common.legend = TRUE, hjust = 0,
           legend = "right", ncol = 3, nrow = 2, align = "hv",
           labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
@@ -1109,7 +1160,7 @@ png("../drafts/figs/TT23_fig3_photoCapacity.png",
     width = 12, height = 8, units = "in", res = 600)
 ggarrange(vcmax_tri_plot, jmax_tri_plot, jvmax_tri_plot, vcmax_mai_plot,  
           jmax_mai_plot, jvmax_mai_plot, common.legend = TRUE, 
-          legend = "bottom", ncol = 3, nrow = 2, align = "hv",
+          legend = "bottom", ncol = 3, nrow = 2, align = "hv", hjust = 0,
           labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
 dev.off()

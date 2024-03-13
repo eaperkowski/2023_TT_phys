@@ -348,10 +348,10 @@ r.squaredGLMM(vcmax.tri)
 
 # Pairwise comparisons
 emmeans(vcmax.tri, pairwise~canopy, type = "response")
-cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy))
+cld(emmeans(vcmax.tri, pairwise~gm.trt*canopy, type = "response"))
 
 # % change canopy
-(23.3 - 101.8) / 23.3 * 100
+(23.3 - 101.8) / 101.8 * 100
 
 ##############################################################################
 ## Vcmax - Mai
@@ -379,7 +379,7 @@ emmeans(vcmax.mai, pairwise~canopy, type = "response")
 emmeans(vcmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(23.3 - 56.2) / 23.3 * 100
+(23.3 - 56.2) / 56.6 * 100
 
 ##############################################################################
 ## Jmax - Tri
@@ -407,13 +407,13 @@ emmeans(jmax.tri, pairwise~canopy, type = "response")
 cld(emmeans(jmax.tri, pairwise~gm.trt*canopy))
 
 # % change canopy
-(43.2 - 179.5) / 43.2 * 100
+(43.2 - 179.5) / 179.5 * 100
 
 ##############################################################################
 ## Jmax - Mai
 ##############################################################################
 jmax.mai <- lmer(
-  jmax25 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+  log(jmax25) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(jmax.mai)
@@ -429,11 +429,11 @@ Anova(jmax.mai)
 r.squaredGLMM(jmax.mai)
 
 # Pairwise comparisons
-emmeans(jmax.mai, pairwise~canopy)
+emmeans(jmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(38.6 - 101.7) / 38.6 * 100
+(38.8 - 99.8) / 99.8 * 100
 
 ##############################################################################
 ## Jmax : Vcmax - Tri
@@ -460,7 +460,7 @@ r.squaredGLMM(jmax.vcmax.tri)
 emmeans(jmax.vcmax.tri, pairwise~canopy, type = "response")
 
 # % change canopy
-(0.543 - 0.567) / 0.543 * 100
+(0.543 - 0.567) / 0.567 * 100
 
 
 ##############################################################################
@@ -489,10 +489,10 @@ emmeans(jmax.vcmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(0.6 - 0.559) / 0.6 * 100 
+(0.6-0.559) / 0.559 * 100 
 
 # % change gm.trt
-(0.592 - 0.567) / 0.592 * 100
+(0.592 - 0.567) / 0.567 * 100
 
 ##############################################################################
 ## SPAD - Tri
@@ -518,8 +518,6 @@ emmeans(spad.tri, pairwise~canopy)
 
 # % change canopy
 (44.7 - 35.5) / 44.7 * 100
-
-
 
 ##############################################################################
 ## SPAD - Mai
