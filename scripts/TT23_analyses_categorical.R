@@ -184,7 +184,7 @@ r.squaredGLMM(anet.tri)
 emmeans(anet.tri, pairwise~canopy, type = "response")
 
 # Percent change
-(4.58 - 12.4) / 4.58 * 100
+(4.58 - 12.4) / 12.4 * 100
 
 ##############################################################################
 ## Anet - Mai
@@ -211,9 +211,11 @@ r.squaredGLMM(anet.mai)
 emmeans(anet.mai, pairwise~canopy)
 emmeans(anet.mai, pairwise~gm.trt)
 
-# Percent change 
-(4.12 - 9.28) / 4.12
+# % change canopy
+(4.12 - 9.28) / 9.28 * 100
 
+# % change gm.trt
+(6.08 - 7.31) / 7.31 * 100
 
 ##############################################################################
 ## gs - Tri
@@ -241,7 +243,7 @@ emmeans(gsw.tri, pairwise~canopy)
 emmeans(gsw.tri, pairwise~gm.trt)
 
 # Canopy % change
-(0.113 - 0.139) / 0.113 * 100
+(0.113 - 0.139) / 0.139 * 100
 
 ##############################################################################
 ## gs - Mai
@@ -269,7 +271,11 @@ emmeans(gsw.mai, pairwise~canopy)
 emmeans(gsw.mai, pairwise~gm.trt)
 
 # Canopy % change
-(0.0594 - 0.1519) / 0.0594 * 100
+(0.0594 - 0.1519) / 0.1519 * 100
+
+# % change gm.trt
+(0.0871 - 0.1242) / 0.1242 * 100
+
 
 ##############################################################################
 ## stomatal limitation - Tri
@@ -297,7 +303,7 @@ emmeans(stomlim.tri, pairwise~canopy, type = "response")
 emmeans(stomlim.tri, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(0.177 - 0.492) / 0.177 * 100
+(0.177 - 0.492) / 0.492 * 100
 
 # % change gm.trt
 (0.287 - 0.303) / 0.287
@@ -324,6 +330,61 @@ r.squaredGLMM(stom.lim.mai)
 # Pairwise comparisons
 emmeans(stom.lim.mai, pairwise~gm.trt, type = "response")
 cld(emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response"))
+
+# % change gm.trt
+(0.356 - 0.273) / 0.273 * 100
+
+##############################################################################
+## SPAD - Tri
+##############################################################################
+spad.tri <- lmer(
+  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+
+# Check model assumptions
+plot(spad.tri)
+qqnorm(residuals(spad.tri))
+qqline(residuals(spad.tri))
+densityPlot(residuals(spad.tri))
+shapiro.test(residuals(spad.tri))
+outlierTest(spad.tri)
+
+# Model output
+summary(spad.tri)
+Anova(spad.tri)
+r.squaredGLMM(spad.tri)
+
+# Pairwise comparisons
+emmeans(spad.tri, pairwise~canopy)
+
+# % change canopy
+(44.7 - 35.5) / 35.5 * 100
+
+##############################################################################
+## SPAD - Mai
+##############################################################################
+df$SPAD[c(122)] <- NA
+
+spad.mai <- lmer(
+  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+
+# Check model assumptions
+plot(spad.mai)
+qqnorm(residuals(spad.mai))
+qqline(residuals(spad.mai))
+densityPlot(residuals(spad.mai))
+shapiro.test(residuals(spad.mai))
+outlierTest(spad.mai)
+
+# Model output
+summary(spad.mai)
+Anova(spad.mai)
+r.squaredGLMM(spad.mai)
+
+# Pairwise comparisons
+emmeans(spad.mai, pairwise~canopy)
+
+# % change canopy
+(39.9 - 26.5) / 26.5 * 100
 
 ##############################################################################
 ## Vcmax - Tri
@@ -462,7 +523,6 @@ emmeans(jmax.vcmax.tri, pairwise~canopy, type = "response")
 # % change canopy
 (0.543 - 0.567) / 0.567 * 100
 
-
 ##############################################################################
 ## Jmax : Vcmax - Mai
 ##############################################################################
@@ -489,115 +549,10 @@ emmeans(jmax.vcmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(0.6-0.559) / 0.559 * 100 
+(0.6 - 0.559) / 0.559 * 100 
 
 # % change gm.trt
 (0.592 - 0.567) / 0.567 * 100
-
-##############################################################################
-## SPAD - Tri
-##############################################################################
-spad.tri <- lmer(
-  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
-# Check model assumptions
-plot(spad.tri)
-qqnorm(residuals(spad.tri))
-qqline(residuals(spad.tri))
-densityPlot(residuals(spad.tri))
-shapiro.test(residuals(spad.tri))
-outlierTest(spad.tri)
-
-# Model output
-summary(spad.tri)
-Anova(spad.tri)
-r.squaredGLMM(spad.tri)
-
-# Pairwise comparisons
-emmeans(spad.tri, pairwise~canopy)
-
-# % change canopy
-(44.7 - 35.5) / 44.7 * 100
-
-##############################################################################
-## SPAD - Mai
-##############################################################################
-df$SPAD[c(122)] <- NA
-
-spad.mai <- lmer(
-  SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
-# Check model assumptions
-plot(spad.mai)
-qqnorm(residuals(spad.mai))
-qqline(residuals(spad.mai))
-densityPlot(residuals(spad.mai))
-shapiro.test(residuals(spad.mai))
-outlierTest(spad.mai)
-
-# Model output
-summary(spad.mai)
-Anova(spad.mai)
-r.squaredGLMM(spad.mai)
-
-# Pairwise comparisons
-emmeans(spad.mai, pairwise~canopy)
-
-# % change canopy
-(39.9 - 26.5) / 39.9 * 100
-
-##############################################################################
-## phi2 - Tri
-##############################################################################
-df$Phi2[92] <- NA
-
-phips2.tri <- lmer(
-  Phi2 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
-# Check model assumptions
-plot(phips2.tri)
-qqnorm(residuals(phips2.tri))
-qqline(residuals(phips2.tri))
-densityPlot(residuals(phips2.tri))
-shapiro.test(residuals(phips2.tri))
-outlierTest(phips2.tri)
-
-# Model output
-summary(phips2.tri)
-Anova(phips2.tri)
-r.squaredGLMM(phips2.tri)
-
-# Pairwise comparisons
-emmeans(phips2.tri, pairwise~canopy)
-
-# % change canopy
-(0.435 - 0.265) / 0.435 * 100
-
-
-##############################################################################
-## phi2 - Mai
-##############################################################################
-phips2.mai <- lmer(
-  Phi2 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
-
-# Check model assumptions
-plot(phips2.mai)
-qqnorm(residuals(phips2.mai))
-qqline(residuals(phips2.mai))
-densityPlot(residuals(phips2.mai))
-shapiro.test(residuals(phips2.mai))
-outlierTest(phips2.mai)
-
-# Model output
-summary(phips2.mai)
-Anova(phips2.mai)
-r.squaredGLMM(phips2.mai)
-
-# Pairwise comparisons
-emmeans(phips2.mai, pairwise~canopy)
-
-# % change canopy
-(0.410 - 0.267) / 0.410 * 100
 
 ##############################################################################
 ## iWUE - Tri
@@ -625,7 +580,7 @@ emmeans(iwue.tri, pairwise~canopy)
 emmeans(iwue.tri, pairwise~gm.trt)
 
 # % change canopy
-(44.6 - 91.3) / 44.6 * 100
+(44.6 - 91.3) / 91.3 * 100
 
 ##############################################################################
 ## iWUE - Mai
@@ -651,10 +606,10 @@ emmeans(iwue.mai, pairwise~canopy)
 emmeans(iwue.mai, pairwise~gm.trt)
 
 # % change canopy
-(78.9 - 62.6) / 78.9 * 100 
+(78.9 - 62.6) / 62.6 * 100 
 
 # % change gm.trt
-(82.6 - 58.9) / 82.6 * 100
+(82.6 - 58.9) / 58.9 * 100
 
 ##############################################################################
 ## SPAD:gs - Tri
@@ -678,7 +633,11 @@ Anova(spad.gs.tri)
 r.squaredGLMM(spad.gs.tri)
 
 # Pairwise comparisons
-emmeans(spad.gs.tri, pairwise~canopy)
+emmeans(spad.gs.tri, pairwise~canopy, type = "response")
+
+# % change canopy
+(410 - 251) / 251 * 100
+
 
 ##############################################################################
 ## SPAD:gs - Mai
@@ -703,8 +662,15 @@ r.squaredGLMM(spad.gs.mai)
 
 # Pairwise comparisons
 emmeans(spad.gs.mai, pairwise~canopy)
-emmeans(spad.gs.mai, pairwise~gm.trt)
+emmeans(spad.gs.mai, pairwise~gm.trt, type = "response")
 cld(emmeans(spad.gs.mai, pairwise~gm.trt*canopy))
+
+# % change canopy
+(6.73 - 5.19) / 5.19 * 100
+
+# % change gm.trt
+(497 - 301) / 301 * 100
+
 
 ##############################################################################
 ## Vcmax25:gs - Tri
@@ -726,10 +692,10 @@ Anova(vcmax.gs.tri)
 r.squaredGLMM(vcmax.gs.tri)
 
 # Pairwise comparisons
-emmeans(vcmax.gs.tri, pairwise~canopy)
+emmeans(vcmax.gs.tri, pairwise~canopy, type = "response")
 
 # % change canopy
-(5.4 - 6.61) / 5.4 * 100
+(221 - 739) / 739 * 100
 
 ##############################################################################
 ## Vcmax25:gs - Mai
@@ -756,10 +722,10 @@ emmeans(vcmax.gs.mai, pairwise~gm.trt, type = "response")
 cld(emmeans(vcmax.gs.mai, pairwise~gm.trt*canopy))
 
 # % change canopy
-(463 -  370) / 463 * 100
+(463 -  370) / 370 * 100
 
 # % change gm.trt
-(519 - 330) / 519 * 100
+(519 - 330) / 330 * 100
 
 
 ##############################################################################
