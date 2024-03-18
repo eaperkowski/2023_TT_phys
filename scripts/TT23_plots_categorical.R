@@ -113,6 +113,10 @@ spad.gs.mai <- lmer(log(spad.gs) ~ gm.trt * canopy + (1 | plot),
 facet.labs <- c("Trillium spp.", "M. racemosum")
 names(facet.labs) <- c("Tri", "Mai")
 
+## Color palettes
+gm.colors <- c("#F7FCB9", "#D95F0E")
+canopy.colors <- c("#EDF8FB", "#3182bd")
+
 ##############################################################################
 ## Soil N availability 
 ##############################################################################
@@ -122,8 +126,7 @@ inorgN_gmtrt_results <- cld(emmeans(plant_availableN, pairwise~gm.trt),
   mutate(.group = trimws(.group, "both"))
 
 nitrogen_gmtrt_plot <- ggplot(data = df.soil,
-                               aes(x = gm.trt, y = inorg_n_ppm, 
-                                   fill = gm.trt)) +
+                              aes(x = gm.trt, y = inorg_n_ppm, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
   geom_boxplot(position = position_dodge(0.75),
@@ -135,7 +138,7 @@ nitrogen_gmtrt_plot <- ggplot(data = df.soil,
             aes(x = gm.trt, y = 40, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -154,18 +157,17 @@ inorgN_canopy_results <- cld(emmeans(plant_availableN, pairwise~canopy),
   mutate(.group = trimws(.group, "both"))
 
 nitrogen_canopy_plot <- ggplot(data = df.soil,
-                                aes(x = canopy, y = inorg_n_ppm, fill = canopy)) +
+                               aes(x = canopy, y = inorg_n_ppm, fill = canopy)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25) +
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitterdodge(dodge.width = 0.75, 
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = phosphate_canopy_results, 
+  geom_text(data = inorgN_canopy_results, 
             aes(x = canopy, y = 40, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
+  scale_fill_manual(values = canopy.colors) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Measurement period",
@@ -187,8 +189,7 @@ phosphate_gmtrt_results <- cld(emmeans(phosphate, pairwise~gm.trt),
   mutate(.group = trimws(.group, "both"))
 
 phosphate_gmtrt_plot <- ggplot(data = df.soil,
-                         aes(x = gm.trt, y = phosphate_ppm, 
-                             fill = gm.trt)) +
+                         aes(x = gm.trt, y = phosphate_ppm, fill = gm.trt)) +
   stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
                position = position_dodge(width = 0.75)) +
   geom_boxplot(position = position_dodge(0.75),
@@ -200,8 +201,7 @@ phosphate_gmtrt_plot <- ggplot(data = df.soil,
             aes(x = gm.trt, y = 2, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
+  scale_fill_manual(values = gm.colors) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -230,8 +230,7 @@ phosphate_canopy_plot <- ggplot(data = df.soil,
             aes(x = canopy, y = 2, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
+  scale_fill_manual(values = canopy.colors) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
   labs(x = "Measurement period",
@@ -265,7 +264,7 @@ soil_np_gmtrt_plot <- ggplot(data = df.soil,
             aes(x = gm.trt, y = 40, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -293,7 +292,7 @@ soil_np_canopy_plot <- ggplot(data = df.soil,
             aes(x = canopy, y = 40, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = canopy.colors) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
   labs(x = "Measurement period",
@@ -307,80 +306,11 @@ soil_np_canopy_plot <- ggplot(data = df.soil,
 soil_np_canopy_plot
 
 ##############################################################################
-## Soil nitrate
-##############################################################################
-# Prep file for figure
-no3_results <- cld(emmeans(nitrate, ~canopy*gm.trt), Letters = LETTERS, reversed = TRUE) %>%
-  mutate(.group = trimws(.group, "both"))
-
-no3_plot <- ggplot(data = df.soil,
-                                aes(x = canopy, y = nitrate_ppm, 
-                                    fill = gm.trt)) +
-  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
-               position = position_dodge(width = 0.75)) +
-  geom_boxplot(position = position_dodge(0.75),
-               width = 0.5, outlier.shape = NA) +
-  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
-                                             jitter.width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = no3_results, 
-            aes(x = canopy, y = 40, group = gm.trt, label = .group),
-            position = position_dodge(width = 0.75), 
-            fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
-  scale_y_continuous(limits = c(0, 40), breaks = seq(0, 40, 10)) +
-  labs(x = "Tree canopy status",
-       y = expression(bold("Soil NO"["3"]*"-N (ppm)")),
-       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  theme_classic(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),
-        axis.title.y = element_text(size = 16),
-        legend.title = element_text(face = "bold"),
-        panel.grid.minor.y = element_blank())
-no3_plot
-
-##############################################################################
-## Soil ammonium
-##############################################################################
-# Prep file for figure
-nh4_results <- cld(emmeans(ammonium, ~canopy*gm.trt), Letters = LETTERS)
-
-nh4_plot <- ggplot(data = df.soil,
-                   aes(x = canopy, y = ammonium_ppm, 
-                       fill = gm.trt)) +
-  stat_boxplot(linewidth = 0.75, geom = "errorbar", width = 0.25, 
-               position = position_dodge(width = 0.75)) +
-  geom_boxplot(position = position_dodge(0.75),
-               width = 0.5, outlier.shape = NA) +
-  geom_point(position = position_jitterdodge(dodge.width = 0.75, 
-                                             jitter.width = 0.1),
-             alpha = 0.5, size = 2.5, shape = 21) +
-  geom_text(data = nh4_results, 
-            aes(x = canopy, y = 1.2, group = gm.trt, label = .group),
-            position = position_dodge(width = 0.75), 
-            fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", "ambient")) +
-  scale_x_discrete(labels = c("open", "closed")) +
-  scale_y_continuous(limits = c(0, 1.2), breaks = seq(0, 1.2, 0.3)) +
-  labs(x = "Tree canopy status",
-       y = expression(bold("Soil NH"["4"]*"-N (ppm)")),
-       fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  theme_classic(base_size = 18) +
-  theme(axis.title = element_text(face = "bold"),
-        axis.title.y = element_text(size = 16),
-        legend.title = element_text(face = "bold"),
-        panel.grid.minor.y = element_blank())
-nh4_plot
-
-##############################################################################
 ## Net photosynthesis - Trillium
 ##############################################################################
 Anova(anet.tri)
 
-anet_tri_results <- cld(emmeans(anet.tri, ~canopy*gm.trt, type = "response"), 
+anet_tri_results <- cld(emmeans(anet.tri, ~gm.trt, type = "response"), 
                 Letters = LETTERS) %>% 
   data.frame() %>% mutate(.group = trimws(.group, "both"))
 
@@ -394,7 +324,7 @@ anet_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = gm.trt, y = 18, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 6)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -429,7 +359,7 @@ anet_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             aes(x = gm.trt, y = 18, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   scale_x_discrete(labels = c("weeded", "ambient")) +
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 6)) +
   labs(x = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -460,7 +390,7 @@ gsw_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = gsw_tri_results, 
             aes(x = gm.trt, y = 0.3, label = .group),
             position = position_dodge(width = 0.75), 
@@ -495,7 +425,7 @@ gsw_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = gsw_mai_results, 
             aes(x = gm.trt, y = 0.3, label = .group),
             position = position_dodge(width = 0.75), 
@@ -530,7 +460,7 @@ stomlim_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = stomlim_tri_results, 
             aes(x = gm.trt, y = 1, label = .group),
             position = position_dodge(width = 0.75), 
@@ -565,7 +495,7 @@ stomlim_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = stomlim_mai_results, 
             aes(x = gm.trt, y = 1, label = .group),
             position = position_dodge(width = 0.75), 
@@ -607,7 +537,7 @@ vcmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = canopy, y = 200, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
@@ -643,13 +573,13 @@ vcmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = vcmax_mai_results, 
-            aes(x = canopy, y = 200, group = gm.trt, label = .group),
+            aes(x = canopy, y = 100, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
-  scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25)) +
   labs(x = "Measurement period",
        y = expression(bold(italic("V")["cmax25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
@@ -683,7 +613,7 @@ jmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = canopy, y = 300, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
@@ -719,13 +649,13 @@ jmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = jmax_mai_results, 
-            aes(x = canopy, y = 300, group = gm.trt, label = .group),
+            aes(x = canopy, y = 150, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
-  scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
+  scale_y_continuous(limits = c(0, 150), breaks = seq(0, 150, 50)) +
   labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*" ("*mu*"mol m"^"-2"*" s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
@@ -756,14 +686,13 @@ jvmax_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = jvmax_tri_results, 
-            aes(x = canopy, y = 0.8, group = gm.trt, label = .group),
+            aes(x = canopy, y = 0.7, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
-                    labels = c("weeded", 
-                               "ambient")) +
+  scale_fill_manual(values = gm.colors,
+                    labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
-  scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
+  scale_y_continuous(limits = c(0.4, 0.70), breaks = seq(0.4, 0.70, 0.1)) +
   labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
@@ -794,13 +723,13 @@ jvmax_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = jvmax_mai_results, 
-            aes(x = canopy, y = 0.8, group = gm.trt, label = .group),
+            aes(x = canopy, y = 0.7, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
-  scale_y_continuous(limits = c(0.4, 0.8), breaks = seq(0.4, 0.8, 0.1)) +
+  scale_y_continuous(limits = c(0.4, 0.7), breaks = seq(0.4, 0.7, 0.1)) +
   labs(x = "Measurement period",
        y = expression(bold(italic("J")["max25"]*":"*italic("V")["cmax25"]*" (unitless)")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
@@ -830,7 +759,7 @@ spad_tri_canopy_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = canopy.colors) +
   geom_text(data = spad_tri_canopy_results, 
             aes(x = canopy, y = 60, label = .group),
             position = position_dodge(width = 0.75), 
@@ -861,7 +790,7 @@ spad_tri_gmtrt_plot <- ggplot(data = subset(df, spp == "Tri"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = spad_tri_gmtrt_results, 
             aes(x = gm.trt, y = 60, label = .group),
             position = position_dodge(width = 0.75), 
@@ -897,7 +826,7 @@ spad_mai_canopy_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = spad_mai_canopy_results, 
             aes(x = canopy, y = 60, label = .group),
             position = position_dodge(width = 0.75), 
@@ -928,7 +857,7 @@ spad_mai_gmtrt_plot <- ggplot(data = subset(df, spp == "Mai"),
   geom_boxplot(width = 0.5, outlier.shape = NA) +
   geom_point(position = position_jitter(width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D")) +
+  scale_fill_manual(values = gm.colors) +
   geom_text(data = spad_mai_gmtrt_results, 
             aes(x = gm.trt, y = 60, label = .group),
             position = position_dodge(width = 0.75), 
@@ -972,7 +901,7 @@ iwue_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = canopy, y = 150, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 150), breaks = seq(0, 150, 50)) +
@@ -1012,7 +941,7 @@ iwue_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             aes(x = canopy, y = 150, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 150), breaks = seq(0, 150, 50)) +
@@ -1051,7 +980,7 @@ spadgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = canopy, y = 600, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 600), breaks = seq(0, 600, 150)) +
@@ -1087,13 +1016,13 @@ spadgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
                                              jitter.width = 0.1),
              alpha = 0.5, size = 2.5, shape = 21) +
   geom_text(data = iwue_mai_results, 
-            aes(x = canopy, y = 600, group = gm.trt, label = .group),
+            aes(x = canopy, y = 4000, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
-  scale_y_continuous(limits = c(0, 600), breaks = seq(0, 600, 150)) +
+  scale_y_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 1000)) +
   labs(x = "Measurement period",
        y = expression(bold("SPAD:g"["sw"]*" (1/ mol m"^"-2"*"s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
@@ -1129,7 +1058,7 @@ vcmaxgs_tri_plot <- ggplot(data = subset(df, spp == "Tri"),
             aes(x = canopy, y = 1600, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 1600), breaks = seq(0, 1600, 400)) +
@@ -1168,7 +1097,7 @@ vcmaxgs_mai_plot <- ggplot(data = subset(df, spp == "Mai"),
             aes(x = canopy, y = 1600, group = gm.trt, label = .group),
             position = position_dodge(width = 0.75), 
             fontface = "bold", size = 6) +
-  scale_fill_manual(values = c("#7BAFDE", "#F1932D"),
+  scale_fill_manual(values = gm.colors,
                     labels = c("weeded", "ambient")) +
   scale_x_discrete(labels = c("open canopy", "closed canopy")) +
   scale_y_continuous(limits = c(0, 1600), breaks = seq(0, 1600, 400)) +
@@ -1190,8 +1119,8 @@ vcmaxgs_mai_plot
 ##############################################################################
 png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 12, height = 8,
     units = "in", res = 600)
-ggarrange(nitrogen_gmtrt_plot, phosphate_gmtrt_plot, soil_np_gmtrt_plot,
-          nitrogen_canopy_plot, phosphate_canopy_plot, soil_np_canopy_plot,
+ggarrange(nitrogen_canopy_plot, phosphate_canopy_plot, soil_np_canopy_plot,
+          nitrogen_gmtrt_plot, phosphate_gmtrt_plot, soil_np_gmtrt_plot,
           ncol = 3, nrow = 2, hjust = 0,
           align = "hv", labels = c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)"), 
           font.label = list(size = 18))
