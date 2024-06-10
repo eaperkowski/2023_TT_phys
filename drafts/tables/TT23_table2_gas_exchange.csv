@@ -1,4 +1,0 @@
-"treatment","Df","chisq_anet.tri","p_anet.tri","chisq_gsw.tri","p_gsw.tri","chisq_stom.lim.tri","p_stom.lim.tri","chisq_anet.mai","p_anet.mai","chisq_gsw.mai","p_gsw.mai","chisq_stom.lim.mai","p_stom.lim.mai"
-"gm.trt",1,0.873,"0.35",0.302,"0.583",0.517,"0.472",9.4,"0.002",24.352,"<0.001",8.92,0.003
-"canopy",1,879.02,"<0.001",18.155,"<0.001",299.825,"<0.001",160.605,"<0.001",140.306,"<0.001",0.133,0.715
-"gm.trt:canopy",1,1.419,"0.234",0.041,"0.839",0.732,"0.392",0.001,"0.981",0.373,"0.542",7.042,0.008

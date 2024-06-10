@@ -31,7 +31,8 @@ df.soil <- df %>%
 ##############################################################################
 ## Nitrate
 ##############################################################################
-nitrate <- lmer(nitrate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
+nitrate <- lmer(
+  nitrate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(nitrate)
@@ -55,9 +56,10 @@ emmeans(nitrate, pairwise~canopy)
 ##############################################################################
 ## Ammonium
 ##############################################################################
-df.soil$ammonium_ppm[c(40, 56)] <- NA
+df.soil$ammonium_ppm[c(2)] <- NA
 
-ammonium <- lmer(ammonium_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
+ammonium <- lmer(
+  log(ammonium_ppm) ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(ammonium)
@@ -73,8 +75,11 @@ Anova(ammonium)
 r.squaredGLMM(ammonium)
 
 # Pairwise comparisons
-cld(emmeans(ammonium, pairwise~canopy*gm.trt), Letters = LETTERS)
+cld(emmeans(ammonium, pairwise~canopy*gm.trt, type = "response"))
 emmeans(ammonium, pairwise~canopy)
+
+# Post canopy closure GM effect % change
+(0.168 - 0.369) / 0.369 * 100
 
 ##############################################################################
 ## Phosphate
@@ -106,7 +111,7 @@ emmeans(phosphate, pairwise~canopy)
 ## N availability (nitrate + ammonium)
 ##############################################################################
 plant_availableN <- lmer(
-  inorg_n_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  log(inorg_n_ppm) ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(plant_availableN)
@@ -123,11 +128,11 @@ r.squaredGLMM(plant_availableN)
 
 # Pairwise comparisons
 cld(emmeans(plant_availableN, pairwise~gm.trt*canopy))
-emmeans(plant_availableN, pairwise~gm.trt)
-emmeans(plant_availableN, pairwise~canopy)
+emmeans(plant_availableN, pairwise~gm.trt, type = "response")
+emmeans(plant_availableN, pairwise~canopy, type = "response")
 
 # Percent change due to canopy
-(5.62 - 18.57) / 18.57 * 100
+(3.99 - 16.99) / 16.99 * 100
 
 ##############################################################################
 ## Soil N:P
@@ -135,7 +140,7 @@ emmeans(plant_availableN, pairwise~canopy)
 df.soil$np.ratio[55] <- NA
 
 n_to_p_ratio <- lmer(
-  np.ratio ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  log(np.ratio) ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
 # Check model assumptions
 plot(n_to_p_ratio)
@@ -151,22 +156,22 @@ Anova(n_to_p_ratio)
 r.squaredGLMM(n_to_p_ratio)
 
 # Pairwise comparisons
-emmeans(n_to_p_ratio, pairwise~canopy)
-emmeans(n_to_p_ratio, pairwise~gm.trt)
+emmeans(n_to_p_ratio, pairwise~canopy, type = "response")
+emmeans(n_to_p_ratio, pairwise~gm.trt, type = "response")
 
 # Percent change due to GM treatment
-(17.1 - 10.2) / 10.2 * 100
+(11.42 - 7.82) / 7.82 * 100
 
 # Percent change due to canopy
-(9.2 - 18.1) / 18.1 * 100
+(5.64 - 15.84) / 15.84 * 100
 
 ##############################################################################
 ## Anet - Tri
 ##############################################################################
-df$anet[c(35, 79, 85, 115)] <- NA
+df$anet[c(35, 79, 85)] <- NA
 
 anet.tri <- lmer(
-  anet ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(anet) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(anet.tri)
@@ -183,14 +188,15 @@ r.squaredGLMM(anet.tri)
 
 # Pairwise comparisons
 emmeans(anet.tri, pairwise~canopy, type = "response")
+cld(emmeans(anet.tri, pairwise~canopy*gm.trt, type = "response"))
 
-# Percent change
-(4.58 - 12.4) / 12.4 * 100
+# Percent change canopy
+(4.51 - 12.62) / 12.62 * 100
 
 ##############################################################################
 ## Anet - Mai
 ##############################################################################
-df$anet[c(70, 119)] <- NA
+df$anet[c(41, 70, 103, 119)] <- NA
 
 anet.mai <- lmer(
   anet ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
@@ -224,7 +230,7 @@ emmeans(anet.mai, pairwise~gm.trt)
 df$gsw[85] <- NA
 
 gsw.tri <- lmer(
-  gsw ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(gsw) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(gsw.tri)
@@ -240,11 +246,10 @@ Anova(gsw.tri)
 r.squaredGLMM(gsw.tri)
 
 # Pairwise comparisons
-emmeans(gsw.tri, pairwise~canopy)
-emmeans(gsw.tri, pairwise~gm.trt)
+emmeans(gsw.tri, pairwise~canopy, type = "response")
 
 # Canopy % change
-(0.113 - 0.139) / 0.139 * 100
+(0.107 - 0.136) / 0.136 * 100
 
 ##############################################################################
 ## gs - Mai
@@ -281,58 +286,57 @@ emmeans(gsw.mai, pairwise~gm.trt)
 ##############################################################################
 ## stomatal limitation - Tri
 ##############################################################################
-df$l[c(85)] <- NA
-
-stomlim.tri <- lmer(log(l) ~ gm.trt * canopy  + (1 | plot),
-                    data = subset(df, spp == "Tri" & l > 0))
+l.tri <- lmer(
+  log(l) ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Tri" & l > 0))
 
 # Check model assumptions
-plot(stomlim.tri)
-qqnorm(residuals(stomlim.tri))
-qqline(residuals(stomlim.tri))
-densityPlot(residuals(stomlim.tri))
-shapiro.test(residuals(stomlim.tri))
-outlierTest(stomlim.tri)
+plot(l.tri)
+qqnorm(residuals(l.tri))
+qqline(residuals(l.tri))
+densityPlot(residuals(l.tri))
+shapiro.test(residuals(l.tri))
+outlierTest(l.tri)
 
 # Model output
-summary(stomlim.tri)
-Anova(stomlim.tri)
-r.squaredGLMM(stomlim.tri)
+summary(l.tri)
+Anova(l.tri)
+r.squaredGLMM(l.tri)
 
 # Pairwise comparisons
-emmeans(stomlim.tri, pairwise~canopy, type = "response")
-emmeans(stomlim.tri, pairwise~gm.trt, type = "response")
+emmeans(l.tri, pairwise~canopy, type = "response")
+emmeans(l.tri, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(0.215 - 0.508) / 0.508 * 100
+(0.216 - 0.512) / 0.512 * 100
 
 # % change gm.trt
-(0.326 - 0.336) / 0.336
+(0.326 - 0.339) / 0.339 * 100
 
 ##############################################################################
 ## stomatal limitation - Mai
 ##############################################################################
-df$l[c(119, 171)] <- NA
+df$l[c(41, 119, 171)] <- NA
 
-stom.lim.mai <- lmer(log(l) ~ gm.trt * canopy + (1 | plot), 
-                     data = subset(df, spp == "Mai" & l > 0))
+l.mai <- lmer(
+  log(l) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai" & l > 0))
 
 # Check model assumptions
-plot(stom.lim.mai)
-qqnorm(residuals(stom.lim.mai))
-qqline(residuals(stom.lim.mai))
-densityPlot(residuals(stom.lim.mai))
-shapiro.test(residuals(stom.lim.mai))
-outlierTest(stom.lim.mai)
+plot(l.mai)
+qqnorm(residuals(l.mai))
+qqline(residuals(l.mai))
+densityPlot(residuals(l.mai))
+shapiro.test(residuals(l.mai))
+outlierTest(l.mai)
 
 # Model output
-summary(stom.lim.mai)
-Anova(stom.lim.mai)
-r.squaredGLMM(stom.lim.mai)
+summary(l.mai)
+Anova(l.mai)
+r.squaredGLMM(l.mai)
 
 # Pairwise comparisons
-emmeans(stom.lim.mai, pairwise~gm.trt, type = "response")
-cld(emmeans(stom.lim.mai, pairwise~gm.trt*canopy, type = "response"))
+cld(emmeans(l.mai, pairwise~gm.trt*canopy, type = "response"))
+emmeans(l.mai, pairwise~gm.trt, type = "response")
+emmeans(l.mai, pairwise~canopy, type = "response")
 
 # % change gm.trt
 (0.405 - 0.325) / 0.325 * 100
@@ -365,6 +369,8 @@ emmeans(spad.tri, pairwise~canopy)
 ##############################################################################
 ## SPAD - Mai
 ##############################################################################
+df$SPAD[121] <- NA
+
 spad.mai <- lmer(
   SPAD ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
 
@@ -390,10 +396,10 @@ emmeans(spad.mai, pairwise~canopy)
 ##############################################################################
 ## Vcmax - Tri
 ##############################################################################
-df$vcmax25[c(20, 36)] <- NA
+df$vcmax25[c(181)] <- NA
 
 vcmax.tri <- lmer(
-  vcmax25 ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(vcmax25) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(vcmax.tri)
@@ -446,7 +452,7 @@ emmeans(vcmax.mai, pairwise~gm.trt, type = "response")
 ##############################################################################
 ## Jmax - Tri
 ##############################################################################
-df$jmax25[c(20, 142, 181)] <- NA
+df$jmax25[c(142, 181)] <- NA
 
 jmax.tri <- lmer(
   log(jmax25) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
@@ -465,18 +471,18 @@ Anova(jmax.tri)
 r.squaredGLMM(jmax.tri)
 
 # Pairwise comparisons
-emmeans(jmax.tri, pairwise~canopy)
-cld(emmeans(jmax.tri, pairwise~gm.trt*canopy))
+emmeans(jmax.tri, pairwise~canopy, type = "response")
+cld(emmeans(jmax.tri, pairwise~gm.trt*canopy, type = "response"))
 
 # % change canopy
-(43.2 - 179.5) / 179.5 * 100
-(3.77 - 5.19) / 5.19
+(44.6 - 176.1) / 176.1 * 100
+
+# % change GM trt after canopy closure
+(41.3 - 48.1) / 48.1 * 100
 
 ##############################################################################
 ## Jmax - Mai
 ##############################################################################
-df$jmax25[229] <- NA
-
 jmax.mai <- lmer(
   log(jmax25) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
 
@@ -498,7 +504,7 @@ emmeans(jmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
-(38.8 - 99.8) / 99.8 * 100
+(44.2 - 102.1) / 102.1 * 100
 
 ##############################################################################
 ## Jmax : Vcmax - Tri
@@ -525,13 +531,11 @@ r.squaredGLMM(jmax.vcmax.tri)
 emmeans(jmax.vcmax.tri, pairwise~canopy, type = "response")
 
 # % change canopy
-(0.543 - 0.567) / 0.567 * 100
+(1.85 - 1.77) / 1.77 * 100
 
 ##############################################################################
 ## Jmax : Vcmax - Mai
 ##############################################################################
-df$jmax.vcmax[c(229)] <- NA
-
 jmax.vcmax.mai <- lmer(
   log(jmax.vcmax) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
 
@@ -559,189 +563,156 @@ emmeans(jmax.vcmax.mai, pairwise~gm.trt, type = "response")
 (0.592 - 0.567) / 0.567 * 100
 
 ##############################################################################
-## iWUE - Tri
-##############################################################################
-df$iwue[c(79, 85, 115)] <- NA
-
-iwue.tri <- lmer(
-  iwue ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
-
-# Check model assumptions
-plot(iwue.tri)
-qqnorm(residuals(iwue.tri))
-qqline(residuals(iwue.tri))
-densityPlot(residuals(iwue.tri))
-shapiro.test(residuals(iwue.tri))
-outlierTest(iwue.tri)
-
-# Model output
-summary(iwue.tri)
-Anova(iwue.tri)
-r.squaredGLMM(iwue.tri)
-
-# Pairwise comparisons
-emmeans(iwue.tri, pairwise~canopy)
-emmeans(iwue.tri, pairwise~gm.trt)
-
-# % change canopy
-(44.6 - 91.3) / 91.3 * 100
-
-##############################################################################
-## iWUE - Mai
-##############################################################################
-iwue.mai <- lmer(
-  iwue ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
-
-# Check model assumptions
-plot(iwue.mai)
-qqnorm(residuals(iwue.mai))
-qqline(residuals(iwue.mai))
-densityPlot(residuals(iwue.mai))
-shapiro.test(residuals(iwue.mai))
-outlierTest(iwue.mai)
-
-# Model output
-summary(iwue.mai)
-Anova(iwue.mai)
-r.squaredGLMM(iwue.mai)
-
-# Pairwise comparisons
-emmeans(iwue.mai, pairwise~canopy)
-emmeans(iwue.mai, pairwise~gm.trt)
-
-# % change canopy
-(78.9 - 62.6) / 62.6 * 100 
-
-# % change gm.trt
-(82.6 - 58.9) / 58.9 * 100
-
-##############################################################################
 ## Write Table 1: Soil nutrients
 ##############################################################################
-soil.nitrogen <- data.frame(Anova(plant_availableN)) %>%
+soil.nitrogen.table <- data.frame(Anova(plant_availableN)) %>%
   mutate(treatment = row.names(.),
          chisq_soilN = Chisq,
          p_soilN = Pr..Chisq.,
-         across(chisq_soilN:p_soilN, round, digits = 3),
+         across(chisq_soilN:p_soilN, \(x) round(x, digits = 3)),
          chisq_soilN = ifelse(chisq_soilN <0.001 & chisq_soilN >= 0, 
                                 "<0.001", chisq_soilN),
          p_soilN = ifelse(p_soilN <0.001 & p_soilN >= 0, 
                                "<0.001", p_soilN)) %>%
   dplyr::select(treatment, Df, chisq_soilN, p_soilN)
 
-soil.nitrate <- data.frame(Anova(nitrate)) %>%
+soil.nitrate.table <- data.frame(Anova(nitrate)) %>%
   mutate(treatment = row.names(.),
          chisq_nitrate = Chisq,
          p_nitrate = Pr..Chisq.,
-         across(chisq_nitrate:p_nitrate, round, digits = 3),
+         across(chisq_nitrate:p_nitrate, \(x) round(x, digits = 3)),
          chisq_nitrate = ifelse(chisq_nitrate < 0.001 & chisq_nitrate >= 0, 
                               "<0.001", chisq_nitrate),
          p_nitrate = ifelse(p_nitrate <0.001 & p_nitrate >= 0, 
                           "<0.001", p_nitrate)) %>%
   dplyr::select(treatment, chisq_nitrate, p_nitrate)
 
-soil.ammonium <- data.frame(Anova(ammonium)) %>%
+soil.ammonium.table <- data.frame(Anova(ammonium)) %>%
   mutate(treatment = row.names(.),
          chisq_ammonium = Chisq,
          p_ammonium = Pr..Chisq.,
-         across(chisq_ammonium:p_ammonium, round, digits = 3),
+         across(chisq_ammonium:p_ammonium, \(x) round(x, digits = 3)),
          chisq_ammonium = ifelse(chisq_ammonium < 0.001 & chisq_ammonium >= 0, 
                                 "<0.001", chisq_ammonium),
          p_ammonium = ifelse(p_ammonium <0.001 & p_ammonium >= 0, 
                             "<0.001", p_ammonium)) %>%
   dplyr::select(treatment, chisq_ammonium, p_ammonium)
 
-soil.phosphate <- data.frame(Anova(phosphate)) %>%
+soil.phosphate.table <- data.frame(Anova(phosphate)) %>%
   mutate(treatment = row.names(.),
          chisq_phosphate = Chisq,
          p_phosphate = Pr..Chisq.,
-         across(chisq_phosphate:p_phosphate, round, digits = 3),
+         across(chisq_phosphate:p_phosphate, \(x) round(x, digits = 3)),
          chisq_phosphate = ifelse(chisq_phosphate < 0.001 & chisq_phosphate >= 0, 
                                  "<0.001", chisq_phosphate),
          p_phosphate = ifelse(p_phosphate <0.001 & p_phosphate >= 0, 
                              "<0.001", p_phosphate)) %>%
   dplyr::select(treatment, chisq_phosphate, p_phosphate)
 
-table1 <- soil.nitrogen %>% full_join(soil.nitrate) %>% 
-  full_join(soil.ammonium) %>% full_join(soil.phosphate)
+table1 <- soil.nitrogen.table %>% full_join(soil.nitrate.table) %>% 
+  full_join(soil.ammonium.table) %>% full_join(soil.phosphate.table)
 
-write.csv(table1, "../drafts/tables/TT23_table1_soil_nutrients.csv",
+write.csv(table1, "../drafts/tables/TT23_tableS1_soil_nutrients.csv",
           row.names = FALSE)
 
 ##############################################################################
 ## Write Table 2: Gas exchange
 ##############################################################################
-anet.tri <- data.frame(Anova(anet.tri)) %>%
+anet.tri.table <- data.frame(Anova(anet.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_anet.tri = Chisq,
          p_anet.tri = Pr..Chisq.,
-         across(chisq_anet.tri:p_anet.tri, round, digits = 3),
+         across(chisq_anet.tri:p_anet.tri, \(x) round(x, digits = 3)),
          chisq_anet.tri = ifelse(chisq_anet.tri < 0.001 & chisq_anet.tri >= 0, 
                               "<0.001", chisq_anet.tri),
          p_anet.tri = ifelse(p_anet.tri <0.001 & p_anet.tri >= 0, 
                           "<0.001", p_anet.tri)) %>%
   dplyr::select(treatment, Df, chisq_anet.tri, p_anet.tri)
 
-anet.mai <- data.frame(Anova(anet.mai)) %>%
+anet.mai.table <- data.frame(Anova(anet.mai)) %>%
   mutate(treatment = row.names(.),
          chisq_anet.mai = Chisq,
          p_anet.mai = Pr..Chisq.,
-         across(chisq_anet.mai:p_anet.mai, round, digits = 3),
+         across(chisq_anet.mai:p_anet.mai, \(x) round(x, digits = 3)),
          chisq_anet.mai = ifelse(chisq_anet.mai < 0.001 & chisq_anet.mai >= 0, 
                                  "<0.001", chisq_anet.mai),
          p_anet.mai = ifelse(p_anet.mai <0.001 & p_anet.mai >= 0, 
                              "<0.001", p_anet.mai)) %>%
   dplyr::select(treatment, chisq_anet.mai, p_anet.mai)
 
-gsw.tri <- data.frame(Anova(gsw.tri)) %>%
+gsw.tri.table <- data.frame(Anova(gsw.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_gsw.tri = Chisq,
          p_gsw.tri = Pr..Chisq.,
-         across(chisq_gsw.tri:p_gsw.tri, round, digits = 3),
+         across(chisq_gsw.tri:p_gsw.tri, \(x) round(x, digits = 3)),
          chisq_gsw.tri = ifelse(chisq_gsw.tri < 0.001 & chisq_gsw.tri >= 0, 
                                  "<0.001", chisq_gsw.tri),
          p_gsw.tri = ifelse(p_gsw.tri <0.001 & p_gsw.tri >= 0, 
-                             "<0.001", p_gsw.tri)) %>%
+                            "<0.001", p_gsw.tri)) %>%
   dplyr::select(treatment, chisq_gsw.tri, p_gsw.tri)
 
-gsw.mai <- data.frame(Anova(gsw.mai)) %>%
+gsw.mai.table <- data.frame(Anova(gsw.mai)) %>%
   mutate(treatment = row.names(.),
          chisq_gsw.mai = Chisq,
          p_gsw.mai = Pr..Chisq.,
-         across(chisq_gsw.mai:p_gsw.mai, round, digits = 3),
+         across(chisq_gsw.mai:p_gsw.mai, \(x) round(x, digits = 3)),
          chisq_gsw.mai = ifelse(chisq_gsw.mai < 0.001 & chisq_gsw.mai >= 0, 
-                                 "<0.001", chisq_gsw.mai),
+                                "<0.001", chisq_gsw.mai),
          p_gsw.mai = ifelse(p_gsw.mai <0.001 & p_gsw.mai >= 0, 
-                             "<0.001", p_gsw.mai)) %>%
+                            "<0.001", p_gsw.mai)) %>%
   dplyr::select(treatment, chisq_gsw.mai, p_gsw.mai)
 
 
-stom.lim.tri <- data.frame(Anova(stomlim.tri)) %>%
+l.tri.table <- data.frame(Anova(l.tri)) %>%
   mutate(treatment = row.names(.),
-         chisq_stom.lim.tri = Chisq,
-         p_stom.lim.tri = Pr..Chisq.,
-         across(chisq_stom.lim.tri:p_stom.lim.tri, round, digits = 3),
-         chisq_stom.lim.tri = ifelse(chisq_stom.lim.tri < 0.001 & 
-                                       chisq_stom.lim.tri >= 0, 
-                                "<0.001", chisq_stom.lim.tri),
-         p_stom.lim.tri = ifelse(p_stom.lim.tri <0.001 & p_stom.lim.tri >= 0, 
-                            "<0.001", p_stom.lim.tri)) %>%
-  dplyr::select(treatment, chisq_stom.lim.tri, p_stom.lim.tri)
+         chisq_l.tri = Chisq,
+         p_l.tri = Pr..Chisq.,
+         across(chisq_l.tri:p_l.tri, \(x) round(x, digits = 3)),
+         chisq_l.tri = ifelse(chisq_l.tri < 0.001 & 
+                                chisq_l.tri >= 0, 
+                              "<0.001", chisq_l.tri),
+         p_l.tri = ifelse(p_l.tri <0.001 & p_l.tri >= 0, 
+                          "<0.001", p_l.tri)) %>%
+  dplyr::select(treatment, chisq_l.tri, p_l.tri)
 
-stom.lim.mai <- data.frame(Anova(stom.lim.mai)) %>%
+l.mai.table <- data.frame(Anova(l.mai)) %>%
   mutate(treatment = row.names(.),
-         chisq_stom.lim.mai = Chisq,
-         p_stom.lim.mai = Pr..Chisq.,
-         across(chisq_stom.lim.mai:p_stom.lim.mai, round, digits = 3),
-         chisq_stom.lim.mai = ifelse(chisq_stom.lim.mai < 0.001 & 
-                                       chisq_stom.lim.mai >= 0, 
-                                "<0.001", chisq_stom.lim.mai),
-         p_stom.lim.mai = ifelse(p_stom.lim.mai <0.001 & p_stom.lim.mai >= 0, 
-                            "<0.001", p_stom.lim.mai)) %>%
-  dplyr::select(treatment, chisq_stom.lim.mai, p_stom.lim.mai)
+         chisq_l.mai = Chisq,
+         p_l.mai = Pr..Chisq.,
+         across(chisq_l.mai:p_l.mai, \(x) round(x, digits = 3)),
+         chisq_l.mai = ifelse(chisq_l.mai < 0.001 & 
+                                chisq_l.mai >= 0, 
+                              "<0.001", chisq_l.mai),
+         p_l.mai = ifelse(p_l.mai <0.001 & p_l.mai >= 0, 
+                          "<0.001", p_l.mai)) %>%
+  dplyr::select(treatment, chisq_l.mai, p_l.mai)
 
-table2 <- anet.tri %>% full_join(gsw.tri) %>% full_join(stom.lim.tri) %>% 
-  full_join(anet.mai) %>% full_join(gsw.mai) %>% full_join(stom.lim.mai)
+spad.tri.table <- data.frame(Anova(spad.tri)) %>%
+  mutate(treatment = row.names(.),
+         chisq_spad.tri = Chisq,
+         p_spad.tri = Pr..Chisq.,
+         across(chisq_spad.tri:p_spad.tri, \(x) round(x, digits = 3)),
+         chisq_spad.tri = ifelse(chisq_spad.tri < 0.001 & chisq_spad.tri >= 0, 
+                                 "<0.001", chisq_spad.tri),
+         p_spad.tri = ifelse(p_spad.tri <0.001 & p_spad.tri >= 0, 
+                             "<0.001", p_spad.tri)) %>%
+  dplyr::select(treatment, Df, chisq_spad.tri, p_spad.tri)
+
+spad.mai.table <- data.frame(Anova(spad.mai)) %>%
+  mutate(treatment = row.names(.),
+         chisq_spad.mai = Chisq,
+         p_spad.mai = Pr..Chisq.,
+         across(chisq_spad.mai:p_spad.mai, \(x) round(x, digits = 3)),
+         chisq_spad.mai = ifelse(chisq_spad.mai < 0.001 & chisq_spad.mai >= 0, 
+                                 "<0.001", chisq_spad.mai),
+         p_spad.mai = ifelse(p_spad.mai <0.001 & p_spad.mai >= 0, 
+                             "<0.001", p_spad.mai)) %>%
+  dplyr::select(treatment, chisq_spad.mai, p_spad.mai)
+
+table2 <- anet.tri.table %>% full_join(gsw.tri.table) %>% 
+  full_join(l.tri.table) %>% full_join(spad.tri.table) %>% 
+  full_join(anet.mai.table) %>% full_join(gsw.mai.table) %>% 
+  full_join(l.mai.table) %>% full_join(spad.mai.table)
 
 write.csv(table2, "../drafts/tables/TT23_table2_gas_exchange.csv",
           row.names = FALSE)
@@ -753,7 +724,7 @@ vcmax.tri <- data.frame(Anova(vcmax.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_vcmax.tri = Chisq,
          p_vcmax.tri = Pr..Chisq.,
-         across(chisq_vcmax.tri:p_vcmax.tri, round, digits = 3),
+         across(chisq_vcmax.tri:p_vcmax.tri, \(x) round(x, digits = 3)),
          chisq_vcmax.tri = ifelse(chisq_vcmax.tri < 0.001 & chisq_vcmax.tri >= 0, 
                                  "<0.001", chisq_vcmax.tri),
          p_vcmax.tri = ifelse(p_vcmax.tri <0.001 & p_vcmax.tri >= 0, 
@@ -764,7 +735,7 @@ vcmax.mai <- data.frame(Anova(vcmax.mai)) %>%
   mutate(treatment = row.names(.),
          chisq_vcmax.mai = Chisq,
          p_vcmax.mai = Pr..Chisq.,
-         across(chisq_vcmax.mai:p_vcmax.mai, round, digits = 3),
+         across(chisq_vcmax.mai:p_vcmax.mai, \(x) round(x, digits = 3)),
          chisq_vcmax.mai = ifelse(chisq_vcmax.mai < 0.001 & chisq_vcmax.mai >= 0, 
                                  "<0.001", chisq_vcmax.mai),
          p_vcmax.mai = ifelse(p_vcmax.mai <0.001 & p_vcmax.mai >= 0, 
@@ -775,7 +746,7 @@ jmax.tri <- data.frame(Anova(jmax.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_jmax.tri = Chisq,
          p_jmax.tri = Pr..Chisq.,
-         across(chisq_jmax.tri:p_jmax.tri, round, digits = 3),
+         across(chisq_jmax.tri:p_jmax.tri, \(x) round(x, digits = 3)),
          chisq_jmax.tri = ifelse(chisq_jmax.tri < 0.001 & chisq_jmax.tri >= 0, 
                                   "<0.001", chisq_jmax.tri),
          p_jmax.tri = ifelse(p_jmax.tri <0.001 & p_jmax.tri >= 0, 
@@ -786,7 +757,7 @@ jmax.mai <- data.frame(Anova(jmax.mai)) %>%
   mutate(treatment = row.names(.),
          chisq_jmax.mai = Chisq,
          p_jmax.mai = Pr..Chisq.,
-         across(chisq_jmax.mai:p_jmax.mai, round, digits = 3),
+         across(chisq_jmax.mai:p_jmax.mai, \(x) round(x, digits = 3)),
          chisq_jmax.mai = ifelse(chisq_jmax.mai < 0.001 & chisq_jmax.mai >= 0, 
                                   "<0.001", chisq_jmax.mai),
          p_jmax.mai = ifelse(p_jmax.mai <0.001 & p_jmax.mai >= 0, 
@@ -797,7 +768,7 @@ jvmax.tri <- data.frame(Anova(jmax.vcmax.tri)) %>%
   mutate(treatment = row.names(.),
          chisq_jvmax.tri = Chisq,
          p_jvmax.tri = Pr..Chisq.,
-         across(chisq_jvmax.tri:p_jvmax.tri, round, digits = 3),
+         across(chisq_jvmax.tri:p_jvmax.tri, \(x) round(x, digits = 3)),
          chisq_jvmax.tri = ifelse(chisq_jvmax.tri < 0.001 & chisq_jvmax.tri >= 0, 
                                  "<0.001", chisq_jvmax.tri),
          p_jvmax.tri = ifelse(p_jvmax.tri <0.001 & p_jvmax.tri >= 0, 
@@ -808,7 +779,7 @@ jvmax.mai <- data.frame(Anova(jmax.vcmax.mai)) %>%
   mutate(treatment = row.names(.),
          chisq_jvmax.mai = Chisq,
          p_jvmax.mai = Pr..Chisq.,
-         across(chisq_jvmax.mai:p_jvmax.mai, round, digits = 3),
+         across(chisq_jvmax.mai:p_jvmax.mai, \(x) round(x, digits = 3)),
          chisq_jvmax.mai = ifelse(chisq_jvmax.mai < 0.001 & chisq_jvmax.mai >= 0, 
                                  "<0.001", chisq_jvmax.mai),
          p_jvmax.mai = ifelse(p_jvmax.mai <0.001 & p_jvmax.mai >= 0, 
@@ -817,114 +788,6 @@ jvmax.mai <- data.frame(Anova(jmax.vcmax.mai)) %>%
 
 table3 <- vcmax.tri %>% full_join(jmax.tri) %>%  full_join(jvmax.tri) %>% 
   full_join(vcmax.mai) %>%  full_join(jmax.mai) %>% full_join(jvmax.mai)
+
 write.csv(table3, "../drafts/tables/TT23_table3_photoCapacity.csv", 
           row.names = FALSE)
-
-##############################################################################
-## Write Table 4: SPAD and phi psII
-##############################################################################
-spad.tri <- data.frame(Anova(spad.tri)) %>%
-  mutate(treatment = row.names(.),
-         chisq_spad.tri = Chisq,
-         p_spad.tri = Pr..Chisq.,
-         across(chisq_spad.tri:p_spad.tri, round, digits = 3),
-         chisq_spad.tri = ifelse(chisq_spad.tri < 0.001 & chisq_spad.tri >= 0, 
-                                 "<0.001", chisq_spad.tri),
-         p_spad.tri = ifelse(p_spad.tri <0.001 & p_spad.tri >= 0, 
-                             "<0.001", p_spad.tri)) %>%
-  dplyr::select(treatment, Df, chisq_spad.tri, p_spad.tri)
-
-spad.mai <- data.frame(Anova(spad.mai)) %>%
-  mutate(treatment = row.names(.),
-         chisq_spad.mai = Chisq,
-         p_spad.mai = Pr..Chisq.,
-         across(chisq_spad.mai:p_spad.mai, round, digits = 3),
-         chisq_spad.mai = ifelse(chisq_spad.mai < 0.001 & chisq_spad.mai >= 0, 
-                                 "<0.001", chisq_spad.mai),
-         p_spad.mai = ifelse(p_spad.mai <0.001 & p_spad.mai >= 0, 
-                             "<0.001", p_spad.mai)) %>%
-  dplyr::select(treatment, chisq_spad.mai, p_spad.mai)
-
-phi2.tri <- data.frame(Anova(phips2.tri)) %>%
-  mutate(treatment = row.names(.),
-         chisq_phi2.tri = Chisq,
-         p_phi2.tri = Pr..Chisq.,
-         across(chisq_phi2.tri:p_phi2.tri, round, digits = 3),
-         chisq_phi2.tri = ifelse(chisq_phi2.tri < 0.001 & chisq_phi2.tri >= 0, 
-                                 "<0.001", chisq_phi2.tri),
-         p_phi2.tri = ifelse(p_phi2.tri < 0.001 & p_phi2.tri >= 0, 
-                             "<0.001", p_phi2.tri)) %>%
-  dplyr::select(treatment, Df, chisq_phi2.tri, p_phi2.tri)
-
-phi2.mai <- data.frame(Anova(phips2.mai)) %>%
-  mutate(treatment = row.names(.),
-         chisq_phi2.mai = Chisq,
-         p_phi2.mai = Pr..Chisq.,
-         across(chisq_phi2.mai:p_phi2.mai, round, digits = 3),
-         chisq_phi2.mai = ifelse(chisq_phi2.mai < 0.001 & chisq_phi2.mai >= 0, 
-                                 "<0.001", chisq_phi2.mai),
-         p_phi2.mai = ifelse(p_phi2.mai < 0.001 & p_phi2.mai >= 0, 
-                             "<0.001", p_phi2.mai)) %>%
-  dplyr::select(treatment, chisq_phi2.mai, p_phi2.mai)
-
-table4 <- spad.tri %>% full_join(phi2.tri) %>% full_join(spad.mai) %>%
-  full_join(phi2.mai)
-write.csv(table4, "../drafts/tables/TT23_table4_chlor_fluor.csv",
-          row.names = FALSE)
-
-##############################################################################
-## Write Table 5: iWUE and Vcmax:gsw
-##############################################################################
-iwue.tri <- data.frame(Anova(iwue.tri)) %>%
-  mutate(treatment = row.names(.),
-         chisq_iwue.tri = Chisq,
-         p_iwue.tri = Pr..Chisq.,
-         across(chisq_iwue.tri:p_iwue.tri, round, digits = 3),
-         chisq_iwue.tri = ifelse(chisq_iwue.tri < 0.001 & chisq_iwue.tri >= 0, 
-                                  "<0.001", chisq_iwue.tri),
-         p_iwue.tri = ifelse(p_iwue.tri <0.001 & p_iwue.tri >= 0, 
-                              "<0.001", p_iwue.tri)) %>%
-  dplyr::select(treatment, Df, chisq_iwue.tri, p_iwue.tri)
-
-iwue.mai <- data.frame(Anova(iwue.mai)) %>%
-  mutate(treatment = row.names(.),
-         chisq_iwue.mai = Chisq,
-         p_iwue.mai = Pr..Chisq.,
-         across(chisq_iwue.mai:p_iwue.mai, round, digits = 3),
-         chisq_iwue.mai = ifelse(chisq_iwue.mai < 0.001 & chisq_iwue.mai >= 0, 
-                                  "<0.001", chisq_iwue.mai),
-         p_iwue.mai = ifelse(p_iwue.mai <0.001 & p_iwue.mai >= 0, 
-                              "<0.001", p_iwue.mai)) %>%
-  dplyr::select(treatment, chisq_iwue.mai, p_iwue.mai)
-
-vcmax.gs.tri <- data.frame(Anova(vcmax.gs.tri)) %>%
-  mutate(treatment = row.names(.),
-         chisq_vcmax.gs.tri = Chisq,
-         p_vcmax.gs.tri = Pr..Chisq.,
-         across(chisq_vcmax.gs.tri:p_vcmax.gs.tri, round, digits = 3),
-         chisq_vcmax.gs.tri = ifelse(chisq_vcmax.gs.tri < 0.001 & 
-                                       chisq_vcmax.gs.tri >= 0, 
-                                     "<0.001", chisq_vcmax.gs.tri),
-         p_iwue.tri = ifelse(p_vcmax.gs.tri <0.001 & p_vcmax.gs.tri >= 0, 
-                             "<0.001", p_vcmax.gs.tri)) %>%
-  dplyr::select(treatment, Df, chisq_vcmax.gs.tri, p_vcmax.gs.tri)
-
-vcmax.gs.mai <- data.frame(Anova(vcmax.gs.mai)) %>%
-  mutate(treatment = row.names(.),
-         chisq_vcmax.gs.mai = Chisq,
-         p_vcmax.gs.mai = Pr..Chisq.,
-         across(chisq_vcmax.gs.mai:p_vcmax.gs.mai, round, digits = 3),
-         chisq_vcmax.gs.mai = ifelse(chisq_vcmax.gs.mai < 0.001 & chisq_vcmax.gs.mai >= 0, 
-                                 "<0.001", chisq_vcmax.gs.mai),
-         p_vcmax.gs.mai = ifelse(p_vcmax.gs.mai <0.001 & p_vcmax.gs.mai >= 0, 
-                             "<0.001", p_vcmax.gs.mai)) %>%
-  dplyr::select(treatment, chisq_vcmax.gs.mai, p_vcmax.gs.mai)
-
-table5 <- iwue.tri %>% full_join(vcmax.gs.tri) %>% full_join(iwue.mai) %>%
-   full_join(vcmax.gs.mai)
-write.csv(table5, "../drafts/tables/TT23_table5_iWUE_vcmaxgs.csv",
-          row.names = FALSE)
-
-
-
-
