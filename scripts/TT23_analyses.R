@@ -31,6 +31,67 @@ df.soil <- df %>%
   mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA),
          np.ratio = inorg_n_ppm/phosphate_ppm)
 
+## Read daily soil moisture dataset
+df.sm <- read.csv("../data/TT23_tomst_probe_sm_daily.csv")
+
+##############################################################################
+## N availability (nitrate + ammonium)
+##############################################################################
+plant_availableN <- lmer(
+  log(inorg_n_ppm) ~ gm.trt * canopy + (1 | plot), data = df.soil)
+
+# Check model assumptions
+plot(plant_availableN)
+qqnorm(residuals(plant_availableN))
+qqline(residuals(plant_availableN))
+densityPlot(residuals(plant_availableN))
+shapiro.test(residuals(plant_availableN))
+outlierTest(plant_availableN)
+
+# Model output
+summary(plant_availableN)
+Anova(plant_availableN)
+r.squaredGLMM(plant_availableN)
+
+# Pairwise comparisons
+emmeans(plant_availableN, pairwise~canopy, type = "response")
+emmeans(plant_availableN, pairwise~gm.trt, type = "response")
+
+# % change canopy
+(4.10 - 16.97) / 16.97 * 100
+
+# % change gm.trt
+(9.00 - 7.74) / 7.74 * 100
+
+##############################################################################
+## Phosphate
+##############################################################################
+phosphate <- lmer(
+  phosphate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
+
+# Check model assumptions
+plot(phosphate)
+qqnorm(residuals(phosphate))
+qqline(residuals(phosphate))
+densityPlot(residuals(phosphate))
+shapiro.test(residuals(phosphate))
+outlierTest(phosphate)
+
+# Model output
+summary(phosphate)
+Anova(phosphate)
+r.squaredGLMM(phosphate)
+
+# Pairwise comparisons
+emmeans(phosphate, pairwise~canopy)
+emmeans(phosphate, pairwise~gm.trt)
+
+# % change canopy
+(0.813 - 1.095) / 1.095 * 100
+
+# % change gm.trt
+(0.88 - 1.03) / 1.03 * 100
+
 ##############################################################################
 ## Nitrate
 ##############################################################################
@@ -79,64 +140,6 @@ r.squaredGLMM(ammonium)
 cld(emmeans(ammonium, pairwise~canopy*gm.trt, type = "response"))
 
 ##############################################################################
-## Phosphate
-##############################################################################
-phosphate <- lmer(
-  phosphate_ppm ~ gm.trt * canopy + (1 | plot), data = df.soil)
-
-# Check model assumptions
-plot(phosphate)
-qqnorm(residuals(phosphate))
-qqline(residuals(phosphate))
-densityPlot(residuals(phosphate))
-shapiro.test(residuals(phosphate))
-outlierTest(phosphate)
-
-# Model output
-summary(phosphate)
-Anova(phosphate)
-r.squaredGLMM(phosphate)
-
-# Pairwise comparisons
-emmeans(phosphate, pairwise~canopy)
-emmeans(phosphate, pairwise~gm.trt)
-
-# % change canopy
-(0.813 - 1.095) / 1.095 * 100
-
-# % change gm.trt
-(0.88 - 1.03) / 1.03 * 100
-
-##############################################################################
-## N availability (nitrate + ammonium)
-##############################################################################
-plant_availableN <- lmer(
-  log(inorg_n_ppm) ~ gm.trt * canopy + (1 | plot), data = df.soil)
-
-# Check model assumptions
-plot(plant_availableN)
-qqnorm(residuals(plant_availableN))
-qqline(residuals(plant_availableN))
-densityPlot(residuals(plant_availableN))
-shapiro.test(residuals(plant_availableN))
-outlierTest(plant_availableN)
-
-# Model output
-summary(plant_availableN)
-Anova(plant_availableN)
-r.squaredGLMM(plant_availableN)
-
-# Pairwise comparisons
-emmeans(plant_availableN, pairwise~canopy, type = "response")
-emmeans(plant_availableN, pairwise~gm.trt, type = "response")
-
-# % change canopy
-(4.10 - 16.97) / 16.97 * 100
-
-# % change gm.trt
-(9.00 - 7.74) / 7.74 * 100
-
-##############################################################################
 ## Soil N:P
 ##############################################################################
 df.soil$np.ratio[54] <- NA
@@ -166,6 +169,28 @@ emmeans(n_to_p_ratio, pairwise~canopy, type = "response")
 
 # % change canopy
 (11.8 - 7.8) / 7.8 * 100
+
+##############################################################################
+## Soil moisture (time series) 
+##############################################################################
+sm_model <- lmer(daily_sm ~ gm.trt * doy + (1 | plot),
+                 data = df.sm)
+
+# Check model assumptions
+plot(sm_model)
+qqnorm(residuals(sm_model))
+qqline(residuals(sm_model))
+densityPlot(residuals(sm_model))
+shapiro.test(residuals(sm_model))
+outlierTest(sm_model)
+
+## Model results
+summary(sm_model)
+Anova(sm_model)
+
+## Post hoc tests
+test(emtrends(sm_model, ~1, "doy"))
+emmeans(sm_model, pairwise~trt)
 
 ##############################################################################
 ## Anet - Tri

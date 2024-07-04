@@ -39,6 +39,9 @@ df.soil <- df %>%
   mutate(across(nitrate_ppm:inorg_n_ppm, .fns = NaN_to_NA),
          np.ratio = inorg_n_ppm/phosphate_ppm)
 
+## Read daily soil moisture dataset
+df.sm <- read.csv("../data/TT23_tomst_probe_sm_daily.csv")
+
 ## Remove outliers
 df.soil$np.ratio[54] <- NA
 df$anet[91] <- NA
@@ -63,6 +66,9 @@ plant_availableN <- lmer(
 
 n_to_p_ratio <- lmer(
   log(np.ratio) ~ gm.trt * canopy + (1 | plot), data = df.soil)
+
+sm_model <- lmer(daily_sm ~ gm.trt * doy + (1 | plot),
+                 data = df.sm)
 
 ## Create models for photosynthesis data
 anet.tri <- lmer(
@@ -112,7 +118,8 @@ facet.labs <- c("Trillium spp.", "M. racemosum")
 names(facet.labs) <- c("Tri", "Mai")
 
 ## Color palettes
-gm.colors <- c("#F7FCB9", "#D95F0E")
+gm.colors <- c("#00B2BE", "#F1B700")
+gm.colors.soil <- c("#000000", "#D95F0E")
 
 ##############################################################################
 ## Soil nitrate availability 
@@ -293,6 +300,49 @@ soil_np_plot <- ggplot(data = df.soil,
         legend.title = element_text(face = "bold"),
         panel.grid.minor.y = element_blank())
 soil_np_plot
+
+###########################################################
+## Soil moisture
+###########################################################
+Anova(sm_model)
+
+# Prep
+sm_means <- df.sm %>%
+  group_by(day, doy, gm.trt) %>%
+  summarize(sm_mean = mean(daily_sm))
+
+sm_results <- data.frame(
+  emmeans(sm_model, ~gm.trt, "doy",
+          at = list(doy = seq(116, 181, 1))))
+
+# Plot
+sm_plot <- ggplot(data = sm_means, aes(x = doy, y = sm_mean)) +
+  geom_line(aes(color = gm.trt)) +
+  geom_point(aes(fill = gm.trt), shape = 21, size = 3) +
+  geom_smooth(data = sm_results, 
+              aes(x = doy, y = emmean, color = gm.trt),
+              se = FALSE) +
+  geom_ribbon(data = sm_results, 
+              aes(x = doy, y = emmean, ymin = emmean - SE,
+                  ymax = emmean + SE, fill = gm.trt),
+              alpha = 0.1) +
+  scale_color_manual(values = gm.colors) +
+  scale_fill_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(0.1, 0.4), 
+                     breaks = seq(0.1, 0.4, 0.1)) +
+  scale_x_continuous(breaks = seq(116, 181, 13),
+                     labels = c("April 26", "May 9", "May 22", 
+                                "June 4", "June 17", "June 30")) +
+  labs(x = "Date", y = "Volumetric soil moisture (%)",
+       color = expression(bolditalic("Alliaria")*bold(" treatment")),
+       fill = expression(bolditalic("Alliaria")*bold(" treatment"))) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.text.x = element_text(size = 12),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        panel.grid.minor.y = element_blank())
+sm_plot
 
 ##############################################################################
 ## Net photosynthesis - Trillium
@@ -850,14 +900,22 @@ png("../drafts/figs/TT23_fig1_soilNutrients.png", width = 12, height = 4.5,
     units = "in", res = 600)
 ggarrange(nitrogen_plot, phosphate_plot, soil_np_plot, ncol = 3, nrow = 1, 
           hjust = 0, common.legend = TRUE, legend = "bottom",
-          align = "hv", labels = c("(a)", "(b)", "(c)"), 
+          align = "hv", labels = c("(a)", "(b)", "(c)", "(d)"), 
           font.label = list(size = 18))
+dev.off()
+
+##############################################################################
+## Figure 1: Soil moisture
+##############################################################################
+png("../drafts/figs/TT23_fig2_soilMoisture.png",
+    width = 8, height = 4.5, units = "in", res = 600)
+sm_plot
 dev.off()
 
 ##############################################################################
 ## Figure 2: Gas exchange
 ##############################################################################
-png("../drafts/figs/TT23_fig2_gasExchange.png", width = 8, height = 12,
+png("../drafts/figs/TT23_fig3_gasExchange.png", width = 8, height = 12,
     units = "in", res = 600)
 ggarrange(anet_tri_plot, anet_mai_plot, gsw_tri_plot, gsw_mai_plot,
           l_tri_plot, l_mai_plot, common.legend = TRUE, 
@@ -869,7 +927,7 @@ dev.off()
 ##############################################################################
 ## Figure 3: Photosynthetic capacity
 ##############################################################################
-png("../drafts/figs/TT23_fig3_photoCapacity.png", 
+png("../drafts/figs/TT23_fig4_photoCapacity.png", 
     width = 8, height = 12, units = "in", res = 600)
 ggarrange(vcmax_tri_plot, vcmax_mai_plot, jmax_tri_plot, jmax_mai_plot, 
           jvmax_tri_plot, jvmax_mai_plot, common.legend = TRUE, 
@@ -888,7 +946,6 @@ ggarrange(nitrate_plot, ammonium_plot,
           align = "hv", font.label = list(size = 18), hjust = 0,
           labels = c("(a)", "(b)"))
 dev.off()
-
 
 ##############################################################################
 ## Figure S2: Chlorophyll fluorescence
