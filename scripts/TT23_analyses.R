@@ -173,7 +173,7 @@ emmeans(n_to_p_ratio, pairwise~canopy, type = "response")
 ##############################################################################
 ## Soil moisture (time series) 
 ##############################################################################
-sm_model <- lmer(daily_sm ~ gm.trt * doy + (1 | plot),
+sm_model <- lmer(daily_vwc ~ gm.trt * doy + (1 | plot),
                  data = df.sm)
 
 # Check model assumptions

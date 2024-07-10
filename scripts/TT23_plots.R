@@ -40,7 +40,8 @@ df.soil <- df %>%
          np.ratio = inorg_n_ppm/phosphate_ppm)
 
 ## Read daily soil moisture dataset
-df.sm <- read.csv("../data/TT23_tomst_probe_sm_daily.csv")
+df.sm <- read.csv("../data/TT23_tomst_probe_sm_daily.csv") %>%
+  mutate(gm.trt = factor(gm.trt, levels = c( "weeded", "ambient")))
 
 ## Remove outliers
 df.soil$np.ratio[54] <- NA
@@ -67,7 +68,7 @@ plant_availableN <- lmer(
 n_to_p_ratio <- lmer(
   log(np.ratio) ~ gm.trt * canopy + (1 | plot), data = df.soil)
 
-sm_model <- lmer(daily_sm ~ gm.trt * doy + (1 | plot),
+sm_model <- lmer(daily_vwc ~ gm.trt * doy + (1 | plot),
                  data = df.sm)
 
 ## Create models for photosynthesis data
@@ -309,26 +310,26 @@ Anova(sm_model)
 # Prep
 sm_means <- df.sm %>%
   group_by(day, doy, gm.trt) %>%
-  summarize(sm_mean = mean(daily_sm))
+  summarize(vwc_mean = mean(daily_vwc))
 
 sm_results <- data.frame(
   emmeans(sm_model, ~gm.trt, "doy",
           at = list(doy = seq(116, 181, 1))))
 
 # Plot
-sm_plot <- ggplot(data = sm_means, aes(x = doy, y = sm_mean)) +
+sm_plot <- ggplot(data = sm_means, aes(x = doy, y = vwc_mean)) +
   geom_line(aes(color = gm.trt)) +
   geom_point(aes(fill = gm.trt), shape = 21, size = 3) +
   geom_smooth(data = sm_results, 
               aes(x = doy, y = emmean, color = gm.trt),
-              se = FALSE) +
+              se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = sm_results, 
               aes(x = doy, y = emmean, ymin = emmean - SE,
                   ymax = emmean + SE, fill = gm.trt),
               alpha = 0.1) +
   scale_color_manual(values = gm.colors) +
   scale_fill_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0.1, 0.4), 
+  scale_y_continuous(limits = c(0.1, 0.42), 
                      breaks = seq(0.1, 0.4, 0.1)) +
   scale_x_continuous(breaks = seq(116, 181, 13),
                      labels = c("April 26", "May 9", "May 22", 
@@ -956,5 +957,48 @@ ggarrange(spad_tri_plot, spad_mai_plot,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 1, 
           align = "hv", font.label = list(size = 18), hjust = 0,
           labels = c("(a)", "(b)"))
+dev.off()
+
+##############################################################################
+## ESA talk figure: net photosynthesis
+##############################################################################
+png("../drafts/figs/TT23_ESAtalk_anet.png", 
+    width = 10, height = 4.5, units = "in", res = 600)
+ggarrange(anet_tri_plot, anet_mai_plot,
+          common.legend = TRUE, legend = "right", ncol = 2, nrow = 1, 
+          align = "hv", font.label = list(size = 18), hjust = 0,
+          labels = c("(a)", "(b)"))
+dev.off()
+
+##############################################################################
+## ESA talk figure: 
+##############################################################################
+png("../drafts/figs/TT23_ESAtalk_tri_gasEx.png", 
+    width = 10, height = 4.5, units = "in", res = 600)
+ggarrange(vcmax_tri_plot, jmax_tri_plot,
+          common.legend = TRUE, legend = "right", ncol = 2, nrow = 1, 
+          align = "hv", font.label = list(size = 18), hjust = 0,
+          labels = c("(a)", "(b)"))
+dev.off()
+
+##############################################################################
+## ESA talk figure: 
+##############################################################################
+png("../drafts/figs/TT23_ESAtalk_mai_gasEx.png", 
+    width = 10, height = 4.5, units = "in", res = 600)
+ggarrange(gsw_mai_plot, l_mai_plot,
+          common.legend = TRUE, legend = "right", ncol = 2, nrow = 1, 
+          align = "hv", font.label = list(size = 18), hjust = 0,
+          labels = c("(a)", "(b)"))
+dev.off()
+
+##############################################################################
+## ESA talk figure: soil resources
+##############################################################################
+png("../drafts/figs/TT23_ESAtalk_soil_conclusions.png", 
+    width = 6, height = 9, units = "in", res = 600)
+ggarrange(nitrogen_plot, sm_plot,
+          common.legend = TRUE, legend = "bottom", ncol = 1, nrow = 2, 
+          align = "hv", hjust = 0)
 dev.off()
 
