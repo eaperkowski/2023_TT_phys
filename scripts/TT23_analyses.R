@@ -533,6 +533,9 @@ r.squaredGLMM(jmax.mai)
 emmeans(jmax.mai, pairwise~canopy, type = "response")
 emmeans(jmax.mai, pairwise~gm.trt, type = "response")
 
+cld(emmeans(jmax.mai, pairwise~canopy*gm.trt))
+
+
 # % change canopy
 (43.887 - 102.424) / 102.424 * 100
 
