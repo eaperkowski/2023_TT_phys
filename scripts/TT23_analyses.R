@@ -452,6 +452,13 @@ emmeans(vcmax.tri, pairwise~canopy, type = "response")
 # % change canopy
 (23.690 - 99.356) / 99.356 * 100
 
+
+# What is the mean +/- SD of Tri Vcmax25?
+df %>%
+  filter(spp == "Tri") %>%
+  summarize(vcmax.mean = mean(vcmax25, na.rm = TRUE),
+            vcmax.stdev = sd(vcmax25, na.rm = TRUE))
+
 ##############################################################################
 ## Vcmax - Mai
 ##############################################################################
@@ -477,6 +484,12 @@ emmeans(vcmax.mai, pairwise~gm.trt, type = "response")
 
 # % change canopy
 (25.081 - 58.061) / 58.061 * 100
+
+# What is the mean +/- SD of Tri Vcmax25?
+df %>%
+  filter(spp == "Mai") %>%
+  summarize(vcmax.mean = mean(vcmax25, na.rm = TRUE),
+            vcmax.stdev = sd(vcmax25, na.rm = TRUE))
 
 ##############################################################################
 ## Jmax - Tri
