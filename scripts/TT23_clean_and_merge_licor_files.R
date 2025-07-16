@@ -152,13 +152,11 @@ file.list2 <- list.files(path = "../licor_data/licor_cleaned/post_canopy_closure
                         recursive = TRUE, pattern = "\\.csv$",
                         full.names = TRUE)
 
-file.list2 <- setNames(file.list, stringr::str_extract(basename(file.list), 
+file.list2 <- setNames(file.list2, stringr::str_extract(basename(file.list2), 
                                                       '.*(?=\\.csv)'))
 
 # Merge list of data frames, arrange by machine, measurement type, id, and time elapsed
-merged_curves2 <- lapply(file.list, read.csv) %>%
-  reshape::merge_all() %>%
-  mutate(date = lubridate::ymd_hms(date)) %>%
+merged_curves2 <- plyr::rbind.fill(lapply(file.list2, read.csv)) %>%
   arrange(machine, date, id)
 
 # Write .csv file that compiles all licor data for Trillium and Maianthemum

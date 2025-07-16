@@ -8,11 +8,9 @@ library(multcomp)
 library(MuMIn)
 
 ## Read compiled data file
-df <- read.csv("../data/TT23_compiled_datasheet.csv") %>%
+df <- read.csv("../../compile_tt_datasets/data/TT23_phys_data.csv") %>%
   mutate(gm.trt = factor(gm.trt, levels = c("invaded", "weeded")),
-         canopy = factor(canopy, levels = c("pre_closure", "post_closure")),
-         vcmax.gs = vcmax25 / gsw,
-         spad.gs = SPAD / gsw)
+         canopy = factor(canopy, levels = c("pre_closure", "post_closure")))
 head(df)
 
 # Turn off digit rounding in emmean args
@@ -38,7 +36,7 @@ df.sm <- read.csv("../data/TT23_tomst_probe_sm_daily.csv")
 ## N availability (nitrate + ammonium)
 ##############################################################################
 plant_availableN <- lmer(
-  log(inorg_n_ppm) ~ gm.trt * canopy + (1 | plot), data = df.soil)
+  log(inorg_n_ppm) ~ gm.trt * canopy + (1 | plot) + (1 | id), data = df.soil)
 
 # Check model assumptions
 plot(plant_availableN)
@@ -196,7 +194,7 @@ emmeans(sm_model, pairwise~trt)
 ## Anet - Tri
 ##############################################################################
 anet.tri <- lmer(
-  log(anet) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(anet) ~ gm.trt * canopy + (1 | plot) + (1 | id), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(anet.tri)
@@ -226,10 +224,10 @@ emmeans(anet.tri, pairwise~gm.trt, type = "response")
 ##############################################################################
 ## Anet - Mai
 ##############################################################################
-df$anet[91] <- NA
+df$anet[88] <- NA
 
 anet.mai <- lmer(
-  anet ~ gm.trt * canopy  + (1 | plot), data = subset(df, spp == "Mai"))
+  anet ~ gm.trt * canopy  + (1 | plot) + (1 | id), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(anet.mai)
@@ -263,10 +261,8 @@ emmeans(anet.mai, pairwise~canopy * gm.trt)
 ##############################################################################
 ## gs - Tri
 ##############################################################################
-df$gsw[53] <- NA
-
 gsw.tri <- lmer(
-  log(gsw) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  gsw ~ gm.trt * canopy + (1 | plot)  + (1 | id), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(gsw.tri)
@@ -290,7 +286,7 @@ emmeans(gsw.tri, pairwise~canopy, type = "response")
 ##############################################################################
 ## gs - Mai
 ##############################################################################
-df$gsw[91] <- NA
+df$gsw[88] <- NA
 
 gsw.mai <- lmer(
   gsw ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
@@ -404,7 +400,7 @@ emmeans(spad.tri, pairwise~canopy)
 df$SPAD[111] <- NA
 
 spad.mai <- lmer(
-  log(SPAD) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Mai"))
+  log(SPAD) ~ gm.trt * canopy + (1 | plot) + (1 | id), data = subset(df, spp == "Mai"))
 
 # Check model assumptions
 plot(spad.mai)
@@ -428,10 +424,10 @@ emmeans(spad.mai, pairwise~canopy, type = "response")
 ##############################################################################
 ## Vcmax - Tri
 ##############################################################################
-df$vcmax25[180] <- NA
+df$vcmax25[176] <- NA
 
 vcmax.tri <- lmer(
-  log(vcmax25) ~ gm.trt * canopy + (1 | plot), data = subset(df, spp == "Tri"))
+  log(vcmax25) ~ gm.trt * canopy + (1 | plot) + (1 | id), data = subset(df, spp == "Tri"))
 
 # Check model assumptions
 plot(vcmax.tri)

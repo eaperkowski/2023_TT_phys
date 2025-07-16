@@ -17,7 +17,7 @@ licor.data.post <- read.csv("../data/TT23_licor_merged_post_closure.csv") %>%
   dplyr::select(id, machine, date, A, Ci, Ca, CO2_r, gsw, Tleaf, VPDleaf, Qin, 
                 S, Flow, Tair, Tleaf, Fan_speed, machine) %>%
   mutate(across(A:Fan_speed, \(x) as.numeric(x, na.rm = TRUE)),
-         date = lubridate::mdy_hm(date),
+         date = lubridate::ymd_hms(date),
          day = lubridate::date(date))
 
 # Load species metadata
@@ -1463,6 +1463,52 @@ write.csv(pre.canopy.merged, "../data/TT23_pre_closure_phys_data.csv",
 ###############################################################################
 ## Plot 5 - 06/12/2023
 ###############################################################################
+## Tag: flag8
+unique(licor.data.post$id)
+
+test <- subset(licor.data.post, is.na(id))
+
+mai.flag8.post <- fitaci(data = subset(licor.data.post, id == "2131"),
+                         varnames = list (ALEAF = "A", Tleaf = "Tleaf", 
+                                          Ci = "Ci", PPFD = "Qin"),
+                         fitTPU = TRUE, Tcorrect = FALSE, citransition = 400)
+plot(mai.flag8.post)
+summary(mai.flag8.post)
+
+
+t(coef(mai.flag8.post))
+
+licor.data.post %>%
+  filter(id == "2131") %>%
+  filter(row_number() == 1) %>%
+  dplyr::select(id, A, Ci, Ca, CO2_r, gsw, Tleaf) %>%
+  cbind(t(coef(mai.flag8.post))) %>%
+  cbind(subset(tgrow_post, id == "2302")[2]) %>%
+    mutate(ci.ca = Ci / Ca,
+           iwue = A / gsw,
+           vcmax25 = temp_standardize(estimate = as.numeric(Vcmax),
+                                      estimate.type = "Vcmax",
+                                      standard.to = 25,
+                                      tLeaf = Tleaf,
+                                      tGrow = tgrow),
+           jmax25 = temp_standardize(estimate = Jmax,
+                                     estimate.type = "Jmax",
+                                     standard.to = 25,
+                                     tLeaf = Tleaf,
+                                     tGrow = tgrow)) %>%
+    mutate(jmax.vcmax = jmax25 / vcmax25,
+           stomatal_limitation(Anet = as.numeric(A),
+                               Vcmax = as.numeric(Vcmax),
+                               Anet_ca = 420,
+                               Rd.meas = TRUE,
+                               Rd = as.numeric(Rd),
+                               leaf.temp = Tleaf,
+                               temp = "C")[5]) %>%
+  dplyr::select(id, A, gsw, l, ci.ca, iwue, Vcmax, vcmax25, Jmax, jmax25, jmax.vcmax)
+
+
+
+
 ## Tag: 2671
 ari.2671.post <- fitaci(data = subset(licor.data.post, id == "2671"),
                         varnames = list (ALEAF = "A", Tleaf = "Tleaf", 
